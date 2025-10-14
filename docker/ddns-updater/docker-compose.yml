@@ -25,7 +25,7 @@ services:
       - ROOT_URL=/
 
       # Backup
-      - BACKUP_PERIOD=7d # 0 to disable
+      - BACKUP_PERIOD=0 # 0 to disable
       - BACKUP_DIRECTORY=/updater/data
 
       # Other
