@@ -1,0 +1,15 @@
+services:
+  homeassistant:
+    container_name: home-assistant
+    image: "ghcr.io/home-assistant/home-assistant:2025.10.2"
+    volumes:
+      - home-assistant_data:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    restart: always
+    privileged: true
+    network_mode: host
+
+volumes:
+  home-assistant_data:
+    name: home-assistant_data

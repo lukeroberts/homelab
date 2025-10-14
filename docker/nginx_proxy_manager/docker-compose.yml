@@ -1,6 +1,7 @@
 services:
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:2.12.6'
+    container_name: nginx-proxy-manager
     restart: always
     healthcheck:
       test: ["CMD", "/usr/bin/check-health"]
