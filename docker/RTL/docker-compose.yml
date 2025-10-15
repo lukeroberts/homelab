@@ -1,0 +1,18 @@
+services:
+  rtl:
+    container_name: RTL
+    image: shahanafarooqui/rtl:v0.15.6
+    restart: unless-stopped
+    volumes:
+      - rtl_data:/config
+      - rtl_data:/RTL/database
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      RTL_CONFIG_PATH: /config
+      CHANNEL_BACKUP_PATH: /config/lnd/backup
+
+volumes:
+  rtl_data:
+    name: rtl_data
