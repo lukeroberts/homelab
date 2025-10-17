@@ -1,0 +1,18 @@
+services:
+  LiT:
+    image: lightninglabs/lightning-terminal:v0.15.2-alpha
+    container_name: LiT
+    restart: unless-stopped
+    volumes:
+      - lit_data:/root
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    ports:
+      - 8443:8443
+    command: litd --configfile=/root/lit.conf
+
+volumes:
+  lit_data:
+    name: lit_data

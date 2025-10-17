@@ -11,7 +11,7 @@ services:
       - heimdall_data:/config
     ports:
       - 8080:80
-      - 8443:443
+      - 8444:443
     restart: always
 
 volumes:
