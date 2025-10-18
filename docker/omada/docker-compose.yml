@@ -30,8 +30,8 @@ services:
       - SSL_KEY_NAME=tls.key
       - TZ=America/Chicago
     volumes:
-      - omada_data:/opt/tplink/EAPController/data
-      - omada_data:/opt/tplink/EAPController/logs
+      - omada_data/data:/opt/tplink/EAPController/data
+      - omada_data/logs:/opt/tplink/EAPController/logs
 
 volumes:
   omada_data:
