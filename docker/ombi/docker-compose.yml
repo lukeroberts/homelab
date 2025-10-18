@@ -1,6 +1,8 @@
 services:
   ombi:
     image: ghcr.io/linuxserver/ombi:development
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     container_name: ombi
     environment:
       - PUID=1000
