@@ -1,7 +1,7 @@
 services:
   omada-controller:
     container_name: omada-controller
-    image: mbentley/omada-controller:5.14-chromium
+    image: mbentley/omada-controller:5.15.24.19
     restart: always
     ulimits:
       nofile:
