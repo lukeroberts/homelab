@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  btcpayserver:
+      environment:
+        BTCPAY_CHAINS: "btc"
+        BTCPAY_BTCEXPLORERURL: http://nbxplorer:32838/
+  nbxplorer:
+      environment:
+        NBXPLORER_CHAINS: "btc"
+        NBXPLORER_BTCRPCURL: http://${BITCOINSERVER}:8332/
+        NBXPLORER_BTCRPCUSER: ${BITCOINRPCUSER}
+        NBXPLORER_BTCRPCPASSWORD: ${BITCOINRPCPASSWORD}
+        NBXPLORER_BTCNODEENDPOINT: ${BITCOINSERVER}:8333
