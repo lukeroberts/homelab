@@ -5,8 +5,17 @@
 
 version: 2
 updates:
-  - package-ecosystem: "docker-compose" # See documentation for possible values
+  - package-ecosystem: "docker-compose"
     directories: 
       - "/docker/*" 
     schedule:
       interval: "weekly"
+      day: "saturday"
+      time: "06:00"
+  - package-ecosystem: "docker"
+    directories: 
+      - "/docker/*" 
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "06:00"
