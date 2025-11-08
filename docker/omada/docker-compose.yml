@@ -1,7 +1,7 @@
 services:
   omada-controller:
     container_name: omada-controller
-    image: mbentley/omada-controller:5.15.24.19
+    image: mbentley/omada-controller:6.0.0.24
     restart: always
     ulimits:
       nofile:
@@ -24,6 +24,7 @@ services:
       - PORT_DISCOVERY=29810
       - PORT_TRANSFER_V2=29815
       - PORT_RTTY=29816
+      - PORT_DEVICE_MONITOR=29817
       - SHOW_SERVER_LOGS=true
       - SHOW_MONGODB_LOGS=false
       - SSL_CERT_NAME=tls.crt
