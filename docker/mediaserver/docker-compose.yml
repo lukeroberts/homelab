@@ -1,5 +1,4 @@
 x-default-container: &default-container
-  user: 1000:1000
   restart: unless-stopped
   networks:
     - mediaserver-net
