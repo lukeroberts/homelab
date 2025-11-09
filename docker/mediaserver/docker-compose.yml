@@ -90,6 +90,7 @@ networks:
 volumes:
   prowlarr_data:
     name: prowlarr_data
+    external: true
   radarr_data:
     name: radarr_data
   sonarr_data:
