@@ -1,0 +1,105 @@
+x-default-container: &default-container
+  user: 1000:1000
+  restart: unless-stopped
+  networks:
+    - mediaserver-net
+
+services: 
+  prowlarr: 
+    <<: *default-container
+    image: lscr.io/linuxserver/prowlarr:2.1.5
+    container_name: prowlarr 
+    hostname: prowlarr 
+    environment:
+      - PUID=1000 
+      - PGID=1000 
+      - TZ=America/Chicago
+    volumes: 
+      - prowlarr_data:/config 
+    ports: 
+      - 9696:9696 
+    depends_on: 
+      - flaresolverr 
+  flaresolverr: 
+    <<: *default-container
+    image: ghcr.io/flaresolverr/flaresolverr:v3.4.3
+    container_name: flaresolverr 
+    hostname: flaresolverr 
+    environment: 
+      - TZ=America/Chicago
+      - LOG_LEVEL=${LOG_LEVEL:-info} 
+      - LOG_HTML=${LOG_HTML:-false} 
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+  radarr: 
+    <<: *default-container
+    image: lscr.io/linuxserver/radarr:5.28.0 
+    container_name: radarr 
+    hostname: radarr 
+    environment:
+      - PUID=1000 
+      - PGID=1000 
+      - TZ=America/Chicago
+    volumes: 
+      - media_share:/mnt/media 
+      - radarr_data:/config
+    ports: 
+      - 7878:7878 
+    depends_on: 
+      - prowlarr 
+      - deluge 
+  sonarr: 
+    <<: *default-container
+    image: lscr.io/linuxserver/sonarr:4.0.16 
+    container_name: sonarr 
+    hostname: sonarr
+    environment:
+      - PUID=1000 
+      - PGID=1000 
+      - TZ=America/Chicago
+    volumes: 
+      - media_share:/mnt/media
+      - sonarr_data:/config 
+    depends_on: 
+      - prowlarr 
+      - deluge
+    ports: 
+      - 8989:8989
+  deluge:
+    <<: *default-container
+    image: lscr.io/linuxserver/deluge:2.2.0
+    container_name: deluge
+    hostname: deluge
+    environment:
+      - PUID=1000 
+      - PGID=1000 
+      - TZ=America/Chicago
+      - DELUGE_LOGLEVEL=info
+    volumes:
+      - media_share:/mnt/media
+      - deluge_data:/config
+    ports:
+      - 8112:8112
+      - 6881:6881
+      - 6881:6881/udp
+      - 58846:58846
+
+networks: 
+  mediaserver-net: 
+    driver: bridge
+
+volumes:
+  prowlarr_data:
+    name: prowlarr_data
+  radarr_data:
+    name: radarr_data
+  sonarr_data:
+    name: sonarr_data
+  deluge_data:
+    name: deluge_data
+  media_share:
+    name: media_share
+    driver: local
+    driver_opts:
+      type: cifs
+      device: ${SMB_SHARE_PATH}
+      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},vers=3.0
