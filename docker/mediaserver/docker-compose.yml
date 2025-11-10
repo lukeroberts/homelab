@@ -96,10 +96,10 @@ volumes:
     name: sonarr_data
   deluge_data:
     name: deluge_data
-  media_share:
-    name: media_share
-    driver: local
-    driver_opts:
-      type: cifs
-      device: ${SMB_SHARE_PATH}
-      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},uid=1000,gid=1000
+#  media_share:
+#    name: media_share
+#    driver: local
+#    driver_opts:
+#      type: cifs
+#      device: ${SMB_SHARE_PATH}
+#      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},uid=1000,gid=1000
