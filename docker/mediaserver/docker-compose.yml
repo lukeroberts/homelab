@@ -39,7 +39,7 @@ services:
       - PGID=1000 
       - TZ=America/Chicago
     volumes: 
-#      - media_share:/mnt/media 
+      - media_share:/mnt/media 
       - radarr_data:/config
     ports: 
       - 7878:7878 
@@ -56,7 +56,7 @@ services:
       - PGID=1000 
       - TZ=America/Chicago
     volumes: 
-#      - media_share:/mnt/media
+      - media_share:/mnt/media
       - sonarr_data:/config 
     depends_on: 
       - prowlarr 
@@ -74,7 +74,7 @@ services:
       - TZ=America/Chicago
       - DELUGE_LOGLEVEL=info
     volumes:
-#      - media_share:/mnt/media
+      - media_share:/mnt/media
       - deluge_data:/config
     ports:
       - 8112:8112
@@ -96,10 +96,10 @@ volumes:
     name: sonarr_data
   deluge_data:
     name: deluge_data
-#  media_share:
-#    name: media_share
-#    driver: local
-#    driver_opts:
-#      type: cifs
-#      device: ${SMB_SHARE_PATH}
-#      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},iocharset=utf8
+  media_share:
+    name: media_share
+    driver: local
+    driver_opts:
+      type: cifs
+      device: ${SMB_SHARE_PATH}
+      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},iocharset=utf8
