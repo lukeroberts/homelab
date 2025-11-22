@@ -31,7 +31,7 @@ services:
       - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
   radarr: 
     <<: *default-container
-    image: lscr.io/linuxserver/radarr:5.28.0 
+    image: lscr.io/linuxserver/radarr:6.0.4 
     container_name: radarr 
     hostname: radarr 
     environment:
