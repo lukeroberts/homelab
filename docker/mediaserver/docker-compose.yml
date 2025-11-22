@@ -6,7 +6,7 @@ x-default-container: &default-container
 services: 
   prowlarr: 
     <<: *default-container
-    image: lscr.io/linuxserver/prowlarr:2.1.5
+    image: lscr.io/linuxserver/prowlarr:2.3.0
     container_name: prowlarr 
     hostname: prowlarr 
     environment:
