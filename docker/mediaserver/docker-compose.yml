@@ -102,4 +102,4 @@ volumes:
     driver_opts:
       type: cifs
       device: ${SMB_SHARE_PATH}
-      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},iocharset=utf8
+      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},iocharset=utf8,uid=1000,gid=1000
