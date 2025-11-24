@@ -78,8 +78,8 @@ services:
       - deluge_data:/config
     ports:
       - 8112:8112
-      - 6881:6881
-      - 6881:6881/udp
+      - 62835:62835
+      - 62835:62835/udp
       - 58846:58846
 
 networks: 
