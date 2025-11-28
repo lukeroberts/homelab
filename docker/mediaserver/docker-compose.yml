@@ -82,6 +82,7 @@ services:
       - 62835:62835/udp
       - 58846:58846
   tautulli:
+    <<: *default-container
     image: ghcr.io/tautulli/tautulli:v2.16.0
     container_name: tautulli
     volumes:
@@ -93,6 +94,7 @@ services:
     ports:
       - 8181:8181
   ombi:
+    <<: *default-container
     image: ghcr.io/linuxserver/ombi:development
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
