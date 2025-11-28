@@ -81,6 +81,30 @@ services:
       - 62835:62835
       - 62835:62835/udp
       - 58846:58846
+  tautulli:
+    image: ghcr.io/tautulli/tautulli:v2.16.0
+    container_name: tautulli
+    volumes:
+      - tautulli_data:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    ports:
+      - 8181:8181
+  ombi:
+    image: ghcr.io/linuxserver/ombi:development
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: ombi
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - ombi_data:/config
+    ports:
+      - 3579:3579
 
 networks: 
   mediaserver-net: 
@@ -96,6 +120,12 @@ volumes:
     name: sonarr_data
   deluge_data:
     name: deluge_data
+  tautulli_data:
+    name: tautulli_data
+    external: true
+  ombi_data:
+    name: ombi_data
+    external: true
   media_share:
     name: media_share
     driver: local
