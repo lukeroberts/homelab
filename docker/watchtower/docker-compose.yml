@@ -3,7 +3,7 @@ services:
   watchtower:
     #test
     image: containrrr/watchtower:latest
-    container_name: watchtower
+    container_name: watchtower-${MACHINENAME:-unknown}
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     hostname: watchtower
