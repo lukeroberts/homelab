@@ -7,7 +7,7 @@ services:
       authentik-postgresql:
         condition: service_healthy
     env_file:
-      - /docker/config/authentik/authentik.env
+      - /data/custom_config/authentik/authentik.env
     restart: unless-stopped
     volumes:
       - authentik_media:/media
@@ -23,7 +23,7 @@ services:
       authentik-postgresql:
         condition: service_healthy
     env_file:
-      - /docker/config/authentik/authentik.env
+      - /data/custom_config/authentik/authentik.env
     restart: unless-stopped
     user: root
     volumes:
@@ -37,7 +37,7 @@ services:
     container_name: authentik-postgresql
     image: docker.io/library/postgres:16-alpine
     env_file:
-      - /docker/config/authentik/postgresql.env
+      - /data/custom_config/authentik/postgresql.env
     healthcheck:
       interval: 30s
       retries: 5
