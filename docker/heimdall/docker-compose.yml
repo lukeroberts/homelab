@@ -9,11 +9,17 @@ services:
       - ALLOW_INTERNAL_REQUESTS=true
     volumes:
       - heimdall_data:/config
-    ports:
-      - 8080:80
-      - 8444:443
+    #ports:
+    #  - 8080:80
+    #  - 8444:443
     restart: always
+    networks:
+      - frontend
 
 volumes:
   heimdall_data:
     name: heimdall_data
+
+networks:
+  frontend:
+    external: true

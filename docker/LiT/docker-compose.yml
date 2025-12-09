@@ -9,10 +9,16 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Chicago
-    ports:
-      - 8443:8443
+    #ports:
+    #  - 8443:8443
     command: litd --configfile=/root/lit.conf
+    networks:
+      - frontend
 
 volumes:
   lit_data:
     name: lit_data
+
+networks:
+  frontend:
+    external: true

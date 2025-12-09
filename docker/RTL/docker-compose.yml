@@ -6,13 +6,19 @@ services:
     volumes:
       - rtl_data:/config
       - rtl_data:/RTL/database
-    ports:
-      - "3000:3000"
+    #ports:
+    #  - "3000:3000"
     environment:
       PORT: 3000
       RTL_CONFIG_PATH: /config
       CHANNEL_BACKUP_PATH: /config/lnd/backup
+    networks:
+      - frontend
 
 volumes:
   rtl_data:
     name: rtl_data
+
+networks:
+  frontend:
+    external: true

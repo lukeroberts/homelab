@@ -2,9 +2,8 @@ services:
   ddns-updater:
     image: qmcgaw/ddns-updater:v2.9.0
     container_name: ddns-updater
-    network_mode: bridge
-    ports:
-      - 8001:8001/tcp
+    #ports:
+    #  - 8001:8001/tcp
     volumes:
       - ddns-updater_data:/updater/data
     environment:
@@ -33,7 +32,13 @@ services:
       - LOG_CALLER=hidden
       - SHOUTRRR_ADDRESSES=
     restart: always
+    networks:
+      - frontend
 
 volumes:
   ddns-updater_data:
     name: ddns-updater_data
+
+networks:
+  frontend:
+    external: true

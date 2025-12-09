@@ -5,9 +5,15 @@ services:
     restart: unless-stopped
     volumes:
       - pulse_data:/data
-    ports:
-      - 7655:7655
+    #ports:
+    #  - 7655:7655
+    networks:
+      - frontend
 
 volumes:
   pulse_data:
     name: pulse_data
+
+networks:
+  frontend:
+    external: true
