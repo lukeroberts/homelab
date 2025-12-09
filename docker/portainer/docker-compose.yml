@@ -9,13 +9,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     ports:
-      - 9443:9443
+    #  - 9443:9443
       - 8000:8000
+    networks:
+      - frontend
 
 volumes:
   portainer_data:
     name: portainer_data
 
 networks:
-  default:
-    name: portainer_network
+  frontend:
+    external: true

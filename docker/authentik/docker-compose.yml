@@ -1,0 +1,69 @@
+services:
+  authentik:
+    container_name: authentik
+    image: ghcr.io/goauthentik/server:2025.10.2
+    command: server
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    env_file:
+      - /docker/config/authentik/.env.authentik
+    restart: unless-stopped
+    volumes:
+      - authentik_media:/media
+      - authentik_templates:/templates
+    networks:
+      - backend
+      - frontend
+  authentik-worker:
+    container_name: authentik-worker
+    image: ghcr.io/goauthentik/server:2025.10.2
+    command: worker
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    env_file:
+      - /docker/config/authentik/.env.authentik
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - authentik_media:/media
+      - authentik_certs:/certs
+      - authentik_templates:/templates
+    networks:
+      - backend
+  authentik-postgresql:
+    container_name: authentik-postgresql
+    image: docker.io/library/postgres:16-alpine
+    env_file:
+      - /docker/config/authentik/.env.postgresql
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+        - CMD-SHELL
+        - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      timeout: 5s
+    restart: unless-stopped
+    volumes:
+      - authentik-postgresql_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  authentik-postgresql_data:
+    driver: local
+  authentik_media:
+    driver: local
+  authentik_certs:
+    driver: local
+  authentik_templates:
+    driver: local
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
