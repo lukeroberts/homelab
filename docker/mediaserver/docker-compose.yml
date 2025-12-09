@@ -41,8 +41,8 @@ services:
     volumes: 
       - media_share:/mnt/media 
       - radarr_data:/config
-    ports: 
-      - 7878:7878 
+    #ports: 
+    #  - 7878:7878 
     depends_on: 
       - prowlarr 
       - deluge 
@@ -61,8 +61,8 @@ services:
     depends_on: 
       - prowlarr 
       - deluge
-    ports: 
-      - 8989:8989
+    #ports: 
+    #  - 8989:8989
   deluge:
     <<: *default-container
     image: lscr.io/linuxserver/deluge:2.2.0
