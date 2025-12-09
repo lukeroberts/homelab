@@ -15,8 +15,8 @@ services:
       - TZ=America/Chicago
     volumes: 
       - prowlarr_data:/config 
-    ports: 
-      - 9696:9696 
+    #ports: 
+    #  - 9696:9696 
     depends_on: 
       - flaresolverr 
   flaresolverr: 
@@ -77,7 +77,7 @@ services:
       - media_share:/mnt/media
       - deluge_data:/config
     ports:
-      - 8112:8112
+    #  - 8112:8112
       - 62835:62835
       - 62835:62835/udp
       - 58846:58846
@@ -91,8 +91,8 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Chicago
-    ports:
-      - 8181:8181
+    #ports:
+    #  - 8181:8181
   ombi:
     <<: *default-container
     image: ghcr.io/linuxserver/ombi:development
@@ -105,8 +105,8 @@ services:
       - TZ=America/Chicago
     volumes:
       - ombi_data:/config
-    ports:
-      - 3579:3579
+    #ports:
+    #  - 3579:3579
 
 networks:
   frontend:
