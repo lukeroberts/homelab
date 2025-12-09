@@ -16,7 +16,13 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - checkmk_data:/omd/sites:rw
     restart: unless-stopped
+    networks:
+      - frontend
 
 volumes:
   checkmk_data:
     driver: local
+
+networks:
+  frontend:
+    external: true

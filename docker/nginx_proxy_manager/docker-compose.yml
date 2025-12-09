@@ -26,7 +26,13 @@ services:
     volumes:
       - nginx_proxy_manager_data:/data
       - nginx_proxy_manager_data:/etc/letsencrypt
+    networks:
+      - frontend
 
 volumes:
   nginx_proxy_manager_data:
     name: nginx_proxy_manager_data
+
+networks:
+  frontend:
+    external: true
