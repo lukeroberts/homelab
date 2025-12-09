@@ -4,7 +4,7 @@ services:
     image: ghcr.io/goauthentik/server:2025.10.2
     command: server
     depends_on:
-      postgresql:
+      authentik-postgresql:
         condition: service_healthy
     env_file:
       - /docker/config/authentik/.env.authentik
@@ -20,7 +20,7 @@ services:
     image: ghcr.io/goauthentik/server:2025.10.2
     command: worker
     depends_on:
-      postgresql:
+      authentik-postgresql:
         condition: service_healthy
     env_file:
       - /docker/config/authentik/.env.authentik
