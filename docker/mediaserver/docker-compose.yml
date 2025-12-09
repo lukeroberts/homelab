@@ -1,7 +1,7 @@
 x-default-container: &default-container
   restart: unless-stopped
   networks:
-    - mediaserver-net
+    - frontend
 
 services: 
   prowlarr: 
@@ -108,9 +108,9 @@ services:
     ports:
       - 3579:3579
 
-networks: 
-  mediaserver-net: 
-    driver: bridge
+networks:
+  frontend:
+    external: true
 
 volumes:
   prowlarr_data:
