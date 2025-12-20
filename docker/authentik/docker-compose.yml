@@ -35,7 +35,7 @@ services:
       - backend
   authentik-postgresql:
     container_name: authentik-postgresql
-    image: docker.io/library/postgres:16-alpine
+    image: docker.io/library/postgres:17-alpine
     env_file:
       - /data/custom_config/authentik/postgresql.env
     healthcheck:
