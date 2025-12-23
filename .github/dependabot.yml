@@ -12,6 +12,10 @@ updates:
       interval: "weekly"
       day: "saturday"
       time: "06:00"
+    ignore:
+      - dependency-name: "checkmk/check-mk-cloud"
+        versions:
+          - "*-*.*.*"
   - package-ecosystem: "docker"
     directories: 
       - "/docker/*" 
