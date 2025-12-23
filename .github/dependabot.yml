@@ -15,7 +15,8 @@ updates:
     ignore:
       - dependency-name: "checkmk/check-mk-cloud"
         versions:
-          - "2.4.0-x"
+          - "2.4.0-x.x.x"
+          - "2.5.0-x.x.x"
   - package-ecosystem: "docker"
     directories: 
       - "/docker/*" 
