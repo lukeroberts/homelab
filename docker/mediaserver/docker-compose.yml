@@ -107,6 +107,18 @@ services:
       - ombi_data:/config
     #ports:
     #  - 3579:3579
+  audiobookshelf:
+    <<: *default-container
+    image: ghcr.io/advplyr/audiobookshelf:2.32.1
+    container_name: audiobookshelf
+    volumes:
+      - audiobookshelf_config:/config
+      - audiobookshelf_metadata:/metadata
+      - media_share:/mnt/media
+    environment:
+      - TZ=America/Chicago
+    #ports:
+    #  - 13378:80
 
 networks:
   frontend:
@@ -128,6 +140,10 @@ volumes:
   ombi_data:
     name: ombi_data
     external: true
+  audiobookshelf_config:
+    name: audiobookshelf_config
+  audiobookshelf_metadata:
+    name: audiobookshelf_metadata
   media_share:
     name: media_share
     driver: local
