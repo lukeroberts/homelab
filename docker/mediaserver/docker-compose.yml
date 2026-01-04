@@ -119,6 +119,20 @@ services:
       - TZ=America/Chicago
     #ports:
     #  - 13378:80
+  recommendarr:
+    <<: *default-container
+    image: tannermiddleton/recommendarr:v1.4.4
+    container_name: recommendarr
+    volumes:
+      - recommendarr_data:/app/server/data
+    environment:
+      - NODE_ENV=production
+      - DOCKER_ENV=false 
+      - PORT=${PORT:-3000}
+      - FORCE_SECURE_COOKIES=true
+      - PUBLIC_URL=${RECOMMENDARR_PUBLIC_URL:-http://localhost:${PORT:-3000}}
+    #ports:
+    #  - "${PORT:-3000}:${PORT:-3000}"
 
 networks:
   frontend:
@@ -144,6 +158,8 @@ volumes:
     name: audiobookshelf_config
   audiobookshelf_metadata:
     name: audiobookshelf_metadata
+  recommendarr_data:
+    name: recommendarr_data
   media_share:
     name: media_share
     driver: local
