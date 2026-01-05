@@ -134,7 +134,8 @@ services:
     #ports:
     #  - "${PORT:-3000}:${PORT:-3000}"
   agregarr:
-    image: agregarr/agregarr:latest
+    <<: *default-container
+    image: agregarr/agregarr:2.1.0
     container_name: agregarr
     volumes:
       - agregarr_data:/app/config
