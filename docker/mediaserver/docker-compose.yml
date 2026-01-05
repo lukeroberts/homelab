@@ -133,6 +133,16 @@ services:
       - PUBLIC_URL=${RECOMMENDARR_PUBLIC_URL:-http://localhost:${PORT:-3000}}
     #ports:
     #  - "${PORT:-3000}:${PORT:-3000}"
+  agregarr:
+    image: agregarr/agregarr:latest
+    container_name: agregarr
+    volumes:
+      - agregarr_data:/app/config
+      - media_share:/mnt/media
+    environment:
+      - TZ=America/Chicago
+    #ports:
+    #  - 7171:7171
 
 networks:
   frontend:
@@ -160,6 +170,8 @@ volumes:
     name: audiobookshelf_metadata
   recommendarr_data:
     name: recommendarr_data
+  agregarr_data:
+    name: agregarr_data
   media_share:
     name: media_share
     driver: local
