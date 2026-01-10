@@ -1,7 +1,7 @@
 services:
   pulse:
     container_name: pulse
-    image: rcourtman/pulse:5.0.10
+    image: rcourtman/pulse:5.0.11
     restart: unless-stopped
     volumes:
       - pulse_data:/data
