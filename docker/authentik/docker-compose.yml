@@ -1,7 +1,7 @@
 services:
   authentik:
     container_name: authentik
-    image: ghcr.io/goauthentik/server:2025.10.3
+    image: ghcr.io/goauthentik/server:2025.12.1
     command: server
     depends_on:
       authentik-postgresql:
@@ -10,14 +10,14 @@ services:
       - /data/custom_config/authentik/authentik.env
     restart: unless-stopped
     volumes:
-      - authentik_media:/media
+      - authentik_media:/data
       - authentik_templates:/templates
     networks:
       - backend
       - frontend
   authentik-worker:
     container_name: authentik-worker
-    image: ghcr.io/goauthentik/server:2025.10.3
+    image: ghcr.io/goauthentik/server:2025.12.1
     command: worker
     depends_on:
       authentik-postgresql:
@@ -28,7 +28,7 @@ services:
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - authentik_media:/media
+      - authentik_media:/data
       - authentik_certs:/certs
       - authentik_templates:/templates
     networks:
