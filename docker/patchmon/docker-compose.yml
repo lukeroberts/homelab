@@ -60,9 +60,9 @@ services:
       LOG_LEVEL: info
       DATABASE_URL: postgresql://patchmon_user:${PATCHMON_POSTGRES_PASSWORD}@database:5432/patchmon_db
       JWT_SECRET: ${PATCHMON_JWT_SECRET}
-      SERVER_PROTOCOL: http
+      SERVER_PROTOCOL: https
       SERVER_HOST: ${PATCHMON_CORS_ORIGIN}
-      SERVER_PORT: 3000
+      SERVER_PORT: 443
       CORS_ORIGIN: https://${PATCHMON_CORS_ORIGIN}
       # Database Connection Pool Configuration (Prisma)
       DB_CONNECTION_LIMIT: 30
