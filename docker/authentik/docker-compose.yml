@@ -36,6 +36,8 @@ services:
   authentik-postgresql:
     container_name: authentik-postgresql
     image: docker.io/library/postgres:16-alpine
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     env_file:
       - /data/custom_config/authentik/postgresql.env
     healthcheck:
