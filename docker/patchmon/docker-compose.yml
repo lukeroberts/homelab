@@ -106,7 +106,7 @@ services:
       - patchmon-internal
       - frontend
     depends_on:
-      patchmon-backend:
+      backend:
         condition: service_healthy
 
 volumes:
