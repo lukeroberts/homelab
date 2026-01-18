@@ -119,31 +119,31 @@ services:
       - TZ=America/Chicago
     #ports:
     #  - 13378:80
-  recommendarr:
-    <<: *default-container
-    image: tannermiddleton/recommendarr:v1.4.4
-    container_name: recommendarr
-    volumes:
-      - recommendarr_data:/app/server/data
-    environment:
-      - NODE_ENV=production
-      - DOCKER_ENV=false 
-      - PORT=${PORT:-3000}
-      - FORCE_SECURE_COOKIES=true
-      - PUBLIC_URL=${RECOMMENDARR_PUBLIC_URL:-http://localhost:${PORT:-3000}}
-    #ports:
-    #  - "${PORT:-3000}:${PORT:-3000}"
-  agregarr:
-    <<: *default-container
-    image: agregarr/agregarr:v2.2.1
-    container_name: agregarr
-    volumes:
-      - agregarr_data:/app/config
-      - media_share:/mnt/media
-    environment:
-      - TZ=America/Chicago
-    #ports:
-    #  - 7171:7171
+  # recommendarr:
+  #   <<: *default-container
+  #   image: tannermiddleton/recommendarr:v1.4.4
+  #   container_name: recommendarr
+  #   volumes:
+  #     - recommendarr_data:/app/server/data
+  #   environment:
+  #     - NODE_ENV=production
+  #     - DOCKER_ENV=false 
+  #     - PORT=${PORT:-3000}
+  #     - FORCE_SECURE_COOKIES=true
+  #     - PUBLIC_URL=${RECOMMENDARR_PUBLIC_URL:-http://localhost:${PORT:-3000}}
+  #   #ports:
+  #   #  - "${PORT:-3000}:${PORT:-3000}"
+  # agregarr:
+  #   <<: *default-container
+  #   image: agregarr/agregarr:v2.2.1
+  #   container_name: agregarr
+  #   volumes:
+  #     - agregarr_data:/app/config
+  #     - media_share:/mnt/media
+  #   environment:
+  #     - TZ=America/Chicago
+  #   #ports:
+  #   #  - 7171:7171
 
 networks:
   frontend:
@@ -169,10 +169,10 @@ volumes:
     name: audiobookshelf_config
   audiobookshelf_metadata:
     name: audiobookshelf_metadata
-  recommendarr_data:
-    name: recommendarr_data
-  agregarr_data:
-    name: agregarr_data
+  # recommendarr_data:
+  #   name: recommendarr_data
+  # agregarr_data:
+  #   name: agregarr_data
   media_share:
     name: media_share
     driver: local
