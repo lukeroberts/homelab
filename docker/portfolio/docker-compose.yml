@@ -36,7 +36,7 @@ networks:
     external: true
 
 volumes:
-  actual_data:
-    name: actual_data
+  actual-data:
+    name: actual-data
   wealthfolio-data:
     name: wealthfolio-data
