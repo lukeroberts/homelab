@@ -119,6 +119,18 @@ services:
       - TZ=America/Chicago
     #ports:
     #  - 13378:80
+  shelfmark:
+    <<: *default-container
+    image: ghcr.io/calibrain/shelfmark:1.0.1
+    container_name: shelfmark
+    environment:
+      PUID: 1000
+      PGID: 1000
+    #ports:
+    #  - 8084:8084
+    volumes:
+      - media_share:/mnt/media
+      - shelfmark_config:/config
   # recommendarr:
   #   <<: *default-container
   #   image: tannermiddleton/recommendarr:v1.4.4
@@ -169,6 +181,8 @@ volumes:
     name: audiobookshelf_config
   audiobookshelf_metadata:
     name: audiobookshelf_metadata
+  shelfmark_config:
+    name: shelfmark_config
   # recommendarr_data:
   #   name: recommendarr_data
   # agregarr_data:
