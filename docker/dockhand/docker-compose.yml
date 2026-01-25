@@ -1,0 +1,21 @@
+services:
+  dockhand:
+    image: fnsys/dockhand:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: dockhand
+    restart: unless-stopped
+    #ports:
+    #  - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - dockhand_data:/app/data
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    external: true
+
+volumes:
+  dockhand_data:

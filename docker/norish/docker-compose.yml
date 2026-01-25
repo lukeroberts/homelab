@@ -1,0 +1,89 @@
+services:
+  norish:
+    image: norishapp/norish:latest
+    container_name: norish-app
+    restart: unless-stopped
+    #ports:
+    #  - "3000:3000"
+    volumes:
+      - norish_data:/app/uploads
+    environment:
+      # Core settings (required)
+      AUTH_URL: ${AUTH_URL} # The URL where Norish is reachable
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@norish-db:5432/norish
+      MASTER_KEY: ${MASTER_KEY}    # Generate with: openssl rand -base64 32
+      CHROME_WS_ENDPOINT: ws://norish-chrome-headless:3000  # Puppeteer WebSocket endpoint for web scraping
+      PASSWORD_AUTH_ENABLED=true # Enable/disable password auth default: false
+      # Redis for real-time events (required)
+      REDIS_URL: redis://norish-redis:6379
+    healthcheck:
+      test: ["CMD", "curl", "--connect-timeout", "15", "--silent", "--show-error", "--fail", "http://localhost:3000/api/health"]
+      interval: 1m
+      timeout: 15s
+      retries: 3
+      start_period: 1m
+    depends_on:
+      - norish-db
+      - norish-redis
+    networks:
+      - frontend
+      - backend
+
+  # PostgreSQL Database
+  norish-db:
+    image: postgres:17-alpine
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: norish-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: norish
+    volumes:
+      - norish_db_data:/var/lib/postgresql/data
+    #ports:
+    #  - "5433:5432"
+    networks:
+      - backend
+
+  # Headless Chrome for recipe scraping
+  norish-chrome-headless:
+    image: zenika/alpine-chrome:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: norish-chrome-headless
+    restart: unless-stopped
+    command:
+      - "--no-sandbox"
+      - "--disable-gpu"
+      - "--disable-dev-shm-usage"
+      - "--remote-debugging-address=0.0.0.0"
+      - "--remote-debugging-port=3000"
+      - "--headless"
+    #ports:
+    #  - "3003:3000"
+    networks:
+      - backend
+
+  # Redis for real-time events
+  norish-redis:
+    image: redis:8.4.0
+    container_name: norish-redis
+    restart: unless-stopped
+    volumes:
+      - norish_redis_data:/data
+    networks:
+      - backend
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
+
+# Use this or map the volume to a host path if you want to persist data
+volumes:
+  norish_db_data:
+  norish_data:
+  norish_redis_data:
