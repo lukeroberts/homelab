@@ -3,6 +3,7 @@ services:
     image: norishapp/norish:latest
     container_name: norish-app
     restart: unless-stopped
+    user: "1000:1000"
     #ports:
     #  - "3000:3000"
     volumes:
