@@ -13,8 +13,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@norish-db:5432/norish
       MASTER_KEY: ${MASTER_KEY}    # Generate with: openssl rand -base64 32
       CHROME_WS_ENDPOINT: ws://norish-chrome-headless:3000  # Puppeteer WebSocket endpoint for web scraping
-      PASSWORD_AUTH_ENABLED=true # Enable/disable password auth default: false
-      # Redis for real-time events (required)
+      PASSWORD_AUTH_ENABLED: true
       REDIS_URL: redis://norish-redis:6379
     healthcheck:
       test: ["CMD", "curl", "--connect-timeout", "15", "--silent", "--show-error", "--fail", "http://localhost:3000/api/health"]
