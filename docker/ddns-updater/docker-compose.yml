@@ -2,12 +2,12 @@ services:
   ddns-updater:
     image: qmcgaw/ddns-updater:v2.9.0
     container_name: ddns-updater
-    healthcheck:
-      test: ["CMD", "/updater/ddns-updater", "healthcheck"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
+    #healthcheck:
+    #  test: ["CMD", "/updater/ddns-updater", "healthcheck"]
+    #  interval: 60s
+    #  timeout: 10s
+    #  retries: 5
+    #  start_period: 10s
     #ports:
     #  - 8001:8001/tcp
     volumes:
