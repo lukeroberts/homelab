@@ -1,6 +1,6 @@
 services:
   norish:
-    image: norishapp/norish:latest
+    image: norishapp/norish:v0.15.6-beta
     container_name: norish-app
     restart: unless-stopped
     user: "1000:1000"
