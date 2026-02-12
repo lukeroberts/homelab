@@ -31,7 +31,7 @@ services:
 
   # PostgreSQL Database
   norish-db:
-    image: postgres:18-alpine
+    image: postgres:17-alpine
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     container_name: norish-db
