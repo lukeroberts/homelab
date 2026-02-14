@@ -1,7 +1,7 @@
 services:
   authentik:
     container_name: authentik
-    image: ghcr.io/goauthentik/server:2025.12.3
+    image: ghcr.io/goauthentik/server:2026.2
     command: server
     depends_on:
       authentik-postgresql:
@@ -17,7 +17,7 @@ services:
       - frontend
   authentik-worker:
     container_name: authentik-worker
-    image: ghcr.io/goauthentik/server:2025.12.3
+    image: ghcr.io/goauthentik/server:2026.2
     command: worker
     depends_on:
       authentik-postgresql:
