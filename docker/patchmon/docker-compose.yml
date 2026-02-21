@@ -81,7 +81,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ghcr.io/patchmon/patchmon-frontend:1.3.7
+    image: ghcr.io/patchmon/patchmon-frontend:1.4.2
     restart: unless-stopped
     environment:
       TZ: America/Chicago
