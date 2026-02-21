@@ -83,7 +83,7 @@ services:
       - 58846:58846
   tautulli:
     <<: *default-container
-    image: ghcr.io/tautulli/tautulli:v2.16.0
+    image: ghcr.io/tautulli/tautulli:v2.16.1
     container_name: tautulli
     volumes:
       - tautulli_data:/config
