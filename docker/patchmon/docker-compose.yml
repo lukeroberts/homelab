@@ -69,6 +69,20 @@ services:
       REDIS_DB: 0
       # Assets directory for custom branding (logos, favicons)
       ASSETS_DIR: /app/assets
+      #OIDC Configuration
+      OIDC_ENABLED: true
+      OIDC_ISSUER_URL: ${OIDC_ISSUER_URL}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI}
+      OIDC_SCOPES: ${OIDC_SCOPES}
+      OIDC_AUTO_CREATE_USERS: true
+      OIDC_DEFAULT_ROLE: Readonly
+      OIDC_BUTTON_TEXT: Login with Authentik
+      OIDC_SUPERADMIN_GROUP: ${OIDC_SUPERADMIN_GROUP}
+      OIDC_ADMIN_GROUP: ${OIDC_ADMIN_GROUP}
+      OIDC_USER_GROUP: ${OIDC_USER_GROUP}
+      OIDC_SYNC_ROLES: true
     volumes:
       - agent_files:/app/agents
       - branding_assets:/app/assets
