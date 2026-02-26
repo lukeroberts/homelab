@@ -65,7 +65,7 @@ services:
     #  - 8989:8989
   deluge:
     <<: *default-container
-    image: lscr.io/linuxserver/deluge:2.2.0
+    image: lscr.io/linuxserver/deluge:2.2.0-r1-ls364
     container_name: deluge
     hostname: deluge
     environment:
