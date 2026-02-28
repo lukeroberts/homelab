@@ -1,6 +1,6 @@
 services:
   norish:
-    image: norishapp/norish:v0.16.1-beta
+    image: norishapp/norish:v0.16.2-beta
     container_name: norish-app
     restart: unless-stopped
     user: "1000:1000"
@@ -68,7 +68,7 @@ services:
 
   # Redis for real-time events
   norish-redis:
-    image: redis:8.4.0
+    image: redis:8.6.0
     container_name: norish-redis
     restart: unless-stopped
     volumes:
