@@ -9,6 +9,7 @@ services:
     env_file:
       - /data/custom_config/authentik/authentik.env
     restart: unless-stopped
+    shm_size: 512mb
     volumes:
       - authentik_media:/data
       - authentik_templates:/templates
@@ -25,6 +26,7 @@ services:
     env_file:
       - /data/custom_config/authentik/authentik.env
     restart: unless-stopped
+    shm_size: 512mb
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
