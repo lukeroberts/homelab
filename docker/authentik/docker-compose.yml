@@ -1,7 +1,7 @@
 services:
   authentik:
     container_name: authentik
-    image: ghcr.io/goauthentik/server:2025.12.4
+    image: ghcr.io/goauthentik/server:2026.2.1
     command: server
     depends_on:
       authentik-postgresql:
@@ -9,6 +9,7 @@ services:
     env_file:
       - /data/custom_config/authentik/authentik.env
     restart: unless-stopped
+    shm_size: 512mb
     volumes:
       - authentik_media:/data
       - authentik_templates:/templates
@@ -17,7 +18,7 @@ services:
       - frontend
   authentik-worker:
     container_name: authentik-worker
-    image: ghcr.io/goauthentik/server:2025.12.4
+    image: ghcr.io/goauthentik/server:2026.2.1
     command: worker
     depends_on:
       authentik-postgresql:
@@ -25,6 +26,7 @@ services:
     env_file:
       - /data/custom_config/authentik/authentik.env
     restart: unless-stopped
+    shm_size: 512mb
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
