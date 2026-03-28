@@ -158,7 +158,7 @@ services:
   #   #  - 7171:7171
   immich-server:
     container_name: immich-server
-    image: ghcr.io/immich-app/immich-server:v2.5.6
+    image: ghcr.io/immich-app/immich-server:v2.6.3
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
@@ -200,7 +200,7 @@ services:
       - backend
   immich-redis:
     container_name: immich-redis
-    image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
+    image: docker.io/valkey/valkey:9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
