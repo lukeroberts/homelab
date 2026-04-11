@@ -6,12 +6,13 @@
 version: 2
 updates:
   - package-ecosystem: "docker-compose"
+    open-pull-requests-limit: 15
     directories: 
       - "/docker/*" 
     schedule:
       interval: "weekly"
       day: "saturday"
-      time: "06:00"
+      time: "04:00"
     ignore:
       - dependency-name: "checkmk/check-mk-cloud"
         versions:
@@ -23,4 +24,4 @@ updates:
     schedule:
       interval: "weekly"
       day: "saturday"
-      time: "06:00"
+      time: "04:00"
