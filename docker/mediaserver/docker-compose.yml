@@ -158,7 +158,7 @@ services:
   #   #  - 7171:7171
   immich-server:
     container_name: immich-server
-    image: ghcr.io/immich-app/immich-server:v2.6.3
+    image: ghcr.io/immich-app/immich-server:v2.7.4
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
@@ -187,7 +187,7 @@ services:
       - backend
   immich-machine-learning:
     container_name: immich-machine-learning
-    image: ghcr.io/immich-app/immich-machine-learning:v2.6.3
+    image: ghcr.io/immich-app/immich-machine-learning:v2.7.4
     # extends: # uncomment this section for hardware acceleration - see https://docs.immich.app/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
