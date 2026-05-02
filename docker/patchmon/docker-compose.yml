@@ -19,6 +19,11 @@ services:
       interval: 3s
       timeout: 5s
       retries: 7
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7-alpine
@@ -35,20 +40,28 @@ services:
       interval: 3s
       timeout: 5s
       retries: 7
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  backend:
-    image: ghcr.io/patchmon/patchmon-backend:1.4.2
+  server:
+    image: ghcr.io/patchmon/patchmon-server:2.0.2
     restart: unless-stopped
     # See PatchMon Docker README for additional environment variables and configuration instructions
     environment:
-      LOG_LEVEL: info
       DATABASE_URL: postgresql://patchmon_user:${PATCHMON_POSTGRES_PASSWORD}@database:5432/patchmon_db
       JWT_SECRET: ${PATCHMON_JWT_SECRET}
+      SESSION_SECRET: ${PATCHMON_SESSION_SECRET}
+      AI_ENCRYPTION_KEY: ${PATCHMON_AI_ENCRYPTION_KEY}
       SERVER_PROTOCOL: https
       SERVER_HOST: ${PATCHMON_CORS_ORIGIN}
       SERVER_PORT: 443
       CORS_ORIGIN: https://${PATCHMON_CORS_ORIGIN}
       TZ: America/Chicago
+      GUACD_ADDRESS: guacd:4822
+      TRUST_PROXY: true
       # Database Connection Pool Configuration (Prisma)
       DB_CONNECTION_LIMIT: 30
       DB_POOL_TIMEOUT: 20
@@ -83,45 +96,52 @@ services:
       OIDC_ADMIN_GROUP: ${OIDC_ADMIN_GROUP}
       OIDC_USER_GROUP: ${OIDC_USER_GROUP}
       OIDC_SYNC_ROLES: true
-    volumes:
-      - agent_files:/app/agents
-      - branding_assets:/app/assets
+    #volumes:
+    #  - agent_files:/app/agents
+    #  - branding_assets:/app/assets
     networks:
       - patchmon-internal
+      - frontend
     depends_on:
       database:
         condition: service_healthy
       redis:
         condition: service_healthy
+      guacd:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  frontend:
-    image: ghcr.io/patchmon/patchmon-frontend:1.4.2
+  guacd:
+    image: guacamole/guacd:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     restart: unless-stopped
-    environment:
-      TZ: America/Chicago
-      OIDC_ENABLED: true
-      OIDC_ISSUER_URL: ${OIDC_ISSUER_URL}
-      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
-      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
-      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI}
-      OIDC_SCOPES: ${OIDC_SCOPES}
-      OIDC_AUTO_CREATE_USERS: true
-      OIDC_DEFAULT_ROLE: Readonly
-      OIDC_BUTTON_TEXT: Login with Authentik
-      OIDC_SUPERADMIN_GROUP: ${OIDC_SUPERADMIN_GROUP}
-      OIDC_ADMIN_GROUP: ${OIDC_ADMIN_GROUP}
-      OIDC_USER_GROUP: ${OIDC_USER_GROUP}
-      OIDC_SYNC_ROLES: true
-    #ports:
-    #  - "3000:3000"
-    volumes:
-      - branding_assets:/usr/share/nginx/html/assets
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 512m
+    cpus: '1.0'
     networks:
       - patchmon-internal
-      - frontend
-    depends_on:
-      backend:
-        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 4822 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
