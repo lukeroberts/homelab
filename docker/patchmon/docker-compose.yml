@@ -146,8 +146,8 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  agent_files:
-  branding_assets:
+#  agent_files:
+#  branding_assets:
 
 networks:
   patchmon-internal:
