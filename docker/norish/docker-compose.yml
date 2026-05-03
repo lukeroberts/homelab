@@ -17,6 +17,7 @@ services:
       PASSWORD_AUTH_ENABLED: true
       REDIS_URL: redis://norish-redis:6379
     healthcheck:
+      disable: true
       test:
         [
           "CMD-SHELL",
