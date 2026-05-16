@@ -1,6 +1,6 @@
 services:
   checkmk:
-    image: checkmk/check-mk-cloud:2.4.0p28
+    image: checkmk/check-mk-cloud:2.4.0p29
     container_name: checkmk
     ports:
       - "8010:8000"
