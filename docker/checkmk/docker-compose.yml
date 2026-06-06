@@ -1,6 +1,6 @@
 services:
   checkmk:
-    image: checkmk/check-mk-ultimate:2.5.0p4
+    image: checkmk/check-mk-ultimate:2.6.0-2026.06.05
     container_name: checkmk
     ports:
       - "8010:8000"
