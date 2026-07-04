@@ -2,7 +2,7 @@ services:
 
   watchtower:
     #test
-    image: nickfedor/watchtower:1.18.1
+    image: nickfedor/watchtower:1.19.0
     container_name: watchtower-${MACHINENAME:-unknown}
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
