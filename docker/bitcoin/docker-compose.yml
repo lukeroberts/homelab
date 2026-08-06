@@ -3,14 +3,16 @@ services:
     image: getumbrel/electrs:v0.11.1
     restart: unless-stopped
     environment:
+      - PUID=1000
+      - PGID=1000
       - ELECTRS_ELECTRUM_RPC_ADDR=0.0.0.0:50001
-      - ELECTRS_DB_DIR=/electrs/db
-      - ELECTRS_DAEMON_RPC_ADDR=${BITCOIND_RPC_ADDR}
-      - ELECTRS_AUTH=${BITCOIND_AUTH}
+      - ELECTRS_DB_DIR=/data/db
+      - ELECTRS_DAEMON_RPC_ADDR=${BITCOIND_RPC_ADDR}:8332
+      - ELECTRS_DAEMON_P2P_ADDR=${BITCOIND_RPC_ADDR}:8333
     ports:
       - 50001:50001
     volumes:
-      - electrs_data:/electrs/db
+      - electrs_data:/data
     networks:
       - frontend
 
@@ -20,4 +22,5 @@ networks:
 
 volumes:
   electrs_data:
+    name: electrs_data
     driver: local
