@@ -1,0 +1,23 @@
+services:
+  electrs:
+    image: getumbrel/electrs:v0.11.1
+    restart: unless-stopped
+    environment:
+      - ELECTRS_ELECTRUM_RPC_ADDR=0.0.0.0:50001
+      - ELECTRS_DB_DIR=/electrs/db
+      - ELECTRS_DAEMON_RPC_ADDR=${BITCOIND_RPC_ADDR}
+      - ELECTRS_AUTH=${BITCOIND_AUTH}
+    ports:
+      - 50001:50001
+    volumes:
+      - electrs_data:/electrs/db
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    external: true
+
+volumes:
+  electrs_data:
+    driver: local
