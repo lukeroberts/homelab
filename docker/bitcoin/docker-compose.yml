@@ -7,8 +7,6 @@ services:
       - PGID=1000
       - ELECTRS_ELECTRUM_RPC_ADDR=0.0.0.0:50001
       - ELECTRS_DB_DIR=/data/db
-      - ELECTRS_DAEMON_RPC_ADDR=${BITCOIND_RPC_ADDR}:8332
-      - ELECTRS_DAEMON_P2P_ADDR=${BITCOIND_RPC_ADDR}:8333
     ports:
       - 50001:50001
     volumes:
