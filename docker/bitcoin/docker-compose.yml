@@ -1,0 +1,24 @@
+services:
+  electrs:
+    image: getumbrel/electrs:v0.11.1
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - ELECTRS_ELECTRUM_RPC_ADDR=0.0.0.0:50001
+      - ELECTRS_DB_DIR=/data/db
+    ports:
+      - 50001:50001
+    volumes:
+      - electrs_data:/data
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    external: true
+
+volumes:
+  electrs_data:
+    name: electrs_data
+    driver: local
