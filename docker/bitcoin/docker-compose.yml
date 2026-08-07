@@ -15,72 +15,93 @@ services:
     networks:
       - frontend
   mempool-web:
+    container_name: mempool-web
+    image: mempool/frontend:v3.3.1
     environment:
       FRONTEND_HTTP_PORT: "8080"
-      BACKEND_MAINNET_HTTP_HOST: "api"
-    image: mempool/frontend:latest
+      BACKEND_MAINNET_HTTP_HOST: "mempool-api"
     user: "1000:1000"
     restart: on-failure
     stop_grace_period: 1m
     command: "./wait-for mempool-db:3306 --timeout=720 -- nginx -g 'daemon off;'"
     ports:
-      - 80:8080
+      - 8080:8080
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/ | grep -q '<html' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
+    networks:
+      - frontend
+      - backend
   mempool-api:
+    container_name: mempool-api
+    image: mempool/backend:v3.3.1
     environment:
-      MEMPOOL_BACKEND: "none"
-      CORE_RPC_HOST: "172.27.0.1"
+      MEMPOOL_BACKEND: "electrum"
+      ELECTRUM_HOST: "electrs"
+      ELECTRUM_PORT: "50001"
+      ELECTRUM_TLS_ENABLED: "false"
+      CORE_RPC_HOST: "${BITCOIND_RPC_HOST}"
       CORE_RPC_PORT: "8332"
-      CORE_RPC_USERNAME: "mempool"
-      CORE_RPC_PASSWORD: "mempool"
+      CORE_RPC_USERNAME: "${BITCOIND_RPC_USER}"
+      CORE_RPC_PASSWORD: "${BITCOIND_RPC_PASS}"
       DATABASE_ENABLED: "true"
       DATABASE_HOST: "mempool-db"
       DATABASE_DATABASE: "mempool"
-      DATABASE_USERNAME: "mempool"
-      DATABASE_PASSWORD: "mempool"
+      DATABASE_USERNAME: "${MEMPOOL_DB_USER}"
+      DATABASE_PASSWORD: "${MEMPOOL_DB_PASS}"
       STATISTICS_ENABLED: "true"
-    image: mempool/backend:latest
     user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 1m
     command: "./wait-for-it.sh mempool-db:3306 --timeout=720 --strict -- ./start.sh"
     volumes:
-      - ./data:/backend/cache
+      - mempool-api_data:/backend/cache
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8999/api/v1/backend-info | grep -q . || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - backend
   mempool-db:
+    container_name: mempool-db
+    image: mariadb:10.5.21
     environment:
       MYSQL_DATABASE: "mempool"
-      MYSQL_USER: "mempool"
-      MYSQL_PASSWORD: "mempool"
-      MYSQL_ROOT_PASSWORD: "admin"
+      MYSQL_USER: "${MEMPOOL_DB_USER}"
+      MYSQL_PASSWORD: "${MEMPOOL_DB_PASS}"
+      MYSQL_ROOT_PASSWORD: "${ROOT_DB_PASS}"
       MARIADB_AUTO_UPGRADE: "1"
-    image: mariadb:10.5.21
     user: "1000:1000"
     restart: on-failure
     stop_grace_period: 1m
     volumes:
-      - ./mysql/data:/var/lib/mysql
+      - mempool-db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mempool", "-pmempool"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mempool", "-p$${MEMPOOL_DB_PASS}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - backend
 
 networks:
   frontend:
+    external: true
+  backend:
     external: true
 
 volumes:
   electrs_data:
     name: electrs_data
+    driver: local
+  mempool-api_data:
+    name: mempool-api_data
+    driver: local
+  mempool-db_data:
+    name: mempool-db_data
     driver: local
