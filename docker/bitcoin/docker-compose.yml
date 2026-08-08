@@ -38,7 +38,10 @@ services:
   mempool-api:
     container_name: mempool-api
     image: mempool/backend:v3.3.1
+    user: "1000:1000"
     environment:
+      PID: 1000
+      GID: 1000
       MEMPOOL_BACKEND: "electrum"
       ELECTRUM_HOST: "electrs"
       ELECTRUM_PORT: "50001"
