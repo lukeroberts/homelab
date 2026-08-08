@@ -56,6 +56,12 @@ services:
       DATABASE_USERNAME: "${MEMPOOL_DB_USER}"
       DATABASE_PASSWORD: "${MEMPOOL_DB_PASS}"
       STATISTICS_ENABLED: "true"
+      LIGHTNING_ENABLED: true
+      LIGHTNING_BACKEND: "lnd"
+      LND_TLS_CERT_PATH: "/backend/cache/mempool_conf/tls.cert"
+      LND_MACAROON_PATH: "/backend/cache/mempool_conf/readonly.macaroon"
+      LND_REST_API_URL: "https://${LND_HOST}:8080"
+      LND_TIMEOUT: 10000
     restart: unless-stopped
     stop_grace_period: 1m
     command: "./wait-for-it.sh mempool-db:3306 --timeout=720 --strict -- ./start.sh"
