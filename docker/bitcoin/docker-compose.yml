@@ -14,6 +14,7 @@ services:
       - electrs_data:/data
     networks:
       - frontend
+      - backend
   mempool-web:
     container_name: mempool-web
     image: mempool/frontend:v3.3.1
