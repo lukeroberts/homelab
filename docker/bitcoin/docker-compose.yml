@@ -80,7 +80,7 @@ services:
     volumes:
       - mempool-db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u $${MEMPOOL_DB_USER} -p$${MEMPOOL_DB_PASS}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u $${MYSQL_USER} -p$${MYSQL_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 10
