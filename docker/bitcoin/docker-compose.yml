@@ -22,6 +22,7 @@ services:
     environment:
       FRONTEND_HTTP_PORT: "8080"
       BACKEND_MAINNET_HTTP_HOST: "mempool-api"
+      LIGHTNING: true
     restart: unless-stopped
     stop_grace_period: 1m
     command: "./wait-for mempool-db:3306 --timeout=720 -- nginx -g 'daemon off;'"
