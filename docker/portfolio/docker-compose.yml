@@ -1,6 +1,6 @@
 services:
   actualbudget:
-    image: ghcr.io/actualbudget/actual:26.8.0
+    image: ghcr.io/actualbudget/actual:26.8.1
     #ports:
     #  - '5006:5006'
     volumes:
