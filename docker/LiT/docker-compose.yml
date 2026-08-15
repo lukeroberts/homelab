@@ -1,6 +1,6 @@
 services:
   LiT:
-    image: lightninglabs/lightning-terminal:v0.17.0-alpha
+    image: lightninglabs/lightning-terminal:v0.17.1-alpha
     container_name: LiT
     restart: unless-stopped
     volumes:
