@@ -80,7 +80,7 @@ services:
       - backend
   mempool-db:
     container_name: mempool-db
-    image: mariadb:10.6.28
+    image: mariadb:12.3.2
     environment:
       MYSQL_DATABASE: "mempool"
       MYSQL_USER: "${MEMPOOL_DB_USER}"
