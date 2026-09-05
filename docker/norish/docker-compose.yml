@@ -72,10 +72,15 @@ services:
     #  - "3003:3000"
     networks:
       - backend
+  
+  norish-obscura:
+    image: norishapp/obscura:0.2.0-norish.1
+    container_name: norish-obscura
+    restart: unless-stopped
 
   # Redis for real-time events
   norish-redis:
-    image: redis:8.6.0
+    image: redis:8.10.1
     container_name: norish-redis
     restart: unless-stopped
     volumes:
