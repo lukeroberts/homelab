@@ -28,6 +28,10 @@ services:
       - WF_SECRET_KEY=${WF_SECRET_KEY}
       - WF_AUTH_PASSWORD_HASH=${WF_AUTH_PASSWORD_HASH}
       - WF_CORS_ALLOW_ORIGINS="${WF_CORS_ALLOW_ORIGINS}"
+      # ── AI Agent Access / MCP (optional) ────────────────────────────────
+      # Requires Wealthfolio authentication via password or OIDC.
+      - WF_MCP_ENABLED=${WF_MCP_ENABLED:-false}
+      - WF_MCP_AUDIT_ENABLED=${WF_MCP_AUDIT_ENABLED:-true}
     restart: unless-stopped
     networks:
       - frontend
