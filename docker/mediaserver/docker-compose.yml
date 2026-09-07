@@ -261,9 +261,9 @@ volumes:
   immich_model_cache:
     name: immich_model_cache
   media_share:
-    name: media_share
+    name: media_share_nfs
     driver: local
     driver_opts:
-      type: cifs
-      device: ${SMB_SHARE_PATH}
-      o: username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},iocharset=utf8,uid=1000,gid=1000
+      type: nfs
+      device: ":${NFS_SHARE_PATH}"
+      o: "addr=${NFS_SERVER},nfsvers=4.1,proto=tcp,sec=sys,rw,hard"
