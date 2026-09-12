@@ -21,7 +21,7 @@ services:
       - flaresolverr 
   flaresolverr: 
     <<: *default-container
-    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
     container_name: flaresolverr 
     hostname: flaresolverr 
     environment: 
