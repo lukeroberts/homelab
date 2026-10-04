@@ -1,6 +1,6 @@
 services:
   LiT:
-    image: lightninglabs/lightning-terminal:v0.17.5-alpha
+    image: lightninglabs/lightning-terminal:v0.17.6
     container_name: LiT
     restart: unless-stopped
     volumes:
@@ -11,7 +11,7 @@ services:
       - TZ=America/Chicago
     #ports:
     #  - 8443:8443
-    command: litd --configfile=/root/lit.conf
+    command: ["--configfile=/root/lit.conf"]
     networks:
       - frontend
 
