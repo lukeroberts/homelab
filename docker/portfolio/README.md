@@ -61,6 +61,42 @@ MFA if available, and test the actual login and onboarding screens, not just `/u
   MCP is write-capable; a client hiding tools is not an enforced read-only boundary.
 - Do not assume features documented on upstream `main` exist in this pinned release.
 
+### Authentik OIDC (optional)
+
+The shared web/worker environment supports one OpenID Connect provider using the
+release's native YAML/env configuration. Set these stack variables in Portainer:
+
+| Variable | Purpose |
+| --- | --- |
+| `SURE_OIDC_ISSUER` | Authentik's per-application issuer URL, ending in `/application/o/<slug>/` |
+| `SURE_OIDC_CLIENT_ID` | Confidential OIDC client identifier |
+| `SURE_OIDC_CLIENT_SECRET` | Client secret stored in Bitwarden; never commit the value |
+| `SURE_OIDC_REDIRECT_URI` | Exact HTTPS callback ending in `/auth/openid_connect/callback` |
+
+Without all four values, Sure skips the OIDC provider and local login remains
+available. Redeploy through Portainer after setting the values; changing the
+stack environment alone does not alter running containers. The login button is
+labelled **Sign in with Authentik**. No DB-provider mode or database edits are
+needed for this env-backed configuration.
+
+Use authorization-code flow, an exact callback allowlist, and the `openid`,
+`email`, and `profile` scopes. Restrict the Authentik application's allowed users
+or groups before enabling it. Sure requires a verified email claim: use an
+appropriate trusted mapping for the authorized identity, not an alias rewrite.
+
+Local login is explicitly retained. JIT provisioning is `create_and_link` so a
+new SSO email can create its own account through Sure's first-login flow. Keep
+the local break-glass super-admin account separate: do not link the SSO identity
+to it, change its email, or configure automatic super-admin group mappings. The
+instance administrator promotes the new SSO account manually after first login.
+A new account may create its own household/family; do not assume it shares the
+local administrator's financial data automatically.
+
+Verify the sign-in button, authorization redirect and complete callback with the
+intended Authentik user. Merely validating discovery does not prove login works.
+If rolling back, clear the four OIDC stack values and redeploy; the separate local
+administrator login remains available. Do not delete user data during rollback.
+
 ### Persistence, backups, and rollback
 
 New stack-scoped named volumes:
