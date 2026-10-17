@@ -1,9 +1,8 @@
 services:
   norish:
-    image: norishapp/norish:v0.25.0-beta
+    image: norishapp/norish:v0.25.1-beta
     container_name: norish-app
     restart: unless-stopped
-    user: "1000:1000"
     #ports:
     #  - "3000:3000"
     volumes:
@@ -14,6 +13,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@norish-db:5432/norish
       MASTER_KEY: ${MASTER_KEY}    # Generate with: openssl rand -base64 32
       OBSCURA_ENDPOINT: ws://norish-obscura:9222  # Browser endpoint for URL imports
+      OBSCURA_CDP_TOKEN: ${OBSCURA_CDP_TOKEN} # Same token as the Obscura service
       PASSWORD_AUTH_ENABLED: true
       REDIS_URL: redis://norish-redis:6379
     healthcheck:
@@ -55,9 +55,11 @@ services:
 
   # Browser for recipe URL imports; no host port or frontend access.
   norish-obscura:
-    image: norishapp/obscura:0.2.2-norish.1
+    image: norishapp/obscura:0.2.4-norish.1
     container_name: norish-obscura
     restart: unless-stopped
+    environment:
+      OBSCURA_CDP_TOKEN: ${OBSCURA_CDP_TOKEN}
     networks:
       - backend
 
