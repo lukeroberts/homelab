@@ -1,4 +1,92 @@
+# Required Sure secrets must be configured in Portainer before merging this file.
+# The existing portfolio stack automatically follows the repository default branch.
+x-sure-env: &sure_env
+  SELF_HOSTED: "true"
+  SECRET_KEY_BASE: ${SURE_SECRET_KEY_BASE:?Set SURE_SECRET_KEY_BASE in Portainer}
+  POSTGRES_USER: sure
+  POSTGRES_PASSWORD: ${SURE_POSTGRES_PASSWORD:?Set SURE_POSTGRES_PASSWORD in Portainer}
+  POSTGRES_DB: sure_production
+  DB_HOST: sure-db
+  DB_PORT: "5432"
+  REDIS_URL: redis://sure-redis:6379/1
+  RAILS_ASSUME_SSL: "true"
+  # HTTPS is terminated by the reverse proxy; the backend health check uses HTTP.
+  RAILS_FORCE_SSL: "false"
+  # No cloud AI provider or static MCP token is enabled by this deployment.
+  OPENAI_ACCESS_TOKEN: ""
+
 services:
+  sure:
+    image: ghcr.io/we-promise/sure:0.7.5-hotfix.2
+    environment: *sure_env
+    volumes:
+      - sure-storage:/rails/storage
+    depends_on:
+      sure-db:
+        condition: service_healthy
+      sure-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:3000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - frontend
+      - sure-backend
+
+  sure-worker:
+    image: ghcr.io/we-promise/sure:0.7.5-hotfix.2
+    command: ["bundle", "exec", "sidekiq"]
+    environment: *sure_env
+    volumes:
+      - sure-storage:/rails/storage
+    # The web entrypoint runs db:prepare. Wait for it before starting Sidekiq.
+    depends_on:
+      sure:
+        condition: service_healthy
+      sure-db:
+        condition: service_healthy
+      sure-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sure-backend
+
+  sure-db:
+    image: postgres:16.13-alpine
+    environment:
+      POSTGRES_USER: sure
+      POSTGRES_PASSWORD: ${SURE_POSTGRES_PASSWORD:?Set SURE_POSTGRES_PASSWORD in Portainer}
+      POSTGRES_DB: sure_production
+    volumes:
+      - sure-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - sure-backend
+
+  sure-redis:
+    image: redis:8.2.10-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - sure-redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "[ \"$$(redis-cli ping)\" = PONG ]"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - sure-backend
+
   actualbudget:
     image: ghcr.io/actualbudget/actual:26.10.0
     #ports:
@@ -37,10 +125,18 @@ services:
       - frontend
 
 networks:
+  sure-backend:
+    driver: bridge
   frontend:
     external: true
 
 volumes:
+  sure-storage:
+    name: sure-storage
+  sure-postgres-data:
+    name: sure-postgres-data
+  sure-redis-data:
+    name: sure-redis-data
   actual-data:
     name: actual-data
   wealthfolio-data:
