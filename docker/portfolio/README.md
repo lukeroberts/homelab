@@ -97,6 +97,52 @@ intended Authentik user. Merely validating discovery does not prove login works.
 If rolling back, clear the four OIDC stack values and redeploy; the separate local
 administrator login remains available. Do not delete user data during rollback.
 
+### Encryption enablement on an existing instance
+
+All three explicit Rails keys must be present in both web and worker before
+protected model fields are encrypted. Runtime keys derived automatically by the
+application are not sufficient to activate model encryption in this release.
+Supply these required stack variables from the secret manager:
+
+- `SURE_ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`
+- `SURE_ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`
+- `SURE_ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT`
+
+Do not rotate keys blindly. Preserve any keys already used for ciphertext and
+keep recoverable copies with database backups. Never print `db:encryption:init`
+output into a chat or shared log. Encryption covers fields declared by Sure,
+not every database column, uploaded attachment, environment variable, or backup.
+
+Existing plaintext requires an offline backfill, not just a restart:
+
+1. Test against an isolated restored database first. Restrict the encrypted backup
+   to its intended operators and keep its decryption secret in the vault.
+2. Quiesce requests and background writers. Take a fresh backup before rewriting
+   protected columns; preserve account identities, roles, passwords and volumes.
+3. In an isolated migration process, supply all three keys **before Rails boots**
+   and set `ACTIVE_RECORD_ENCRYPTION_SUPPORT_UNENCRYPTED_DATA=true`. Do not leave
+   compatibility enabled in the normal deployment. Plaintext reads can work while
+   deterministic email lookups still fail before the backfill completes.
+4. Run `scripts/encrypt_existing_data.rb` through Rails runner with
+   `CONFIRM_ENCRYPT_EXISTING_DATA=yes`. It uses Rails' `encrypt` method, transaction
+   rollback on errors, row locks, decrypted-value comparison, and checks that
+   unrelated columns are unchanged. It prints counts only. Re-running it skips
+   already-encrypted rows.
+5. Deploy the explicit keys through Portainer and run
+   `scripts/verify_encryption.rb` in a fresh process with legacy compatibility
+   disabled. It checks populated protected fields for ciphertext, confirms
+   decryption and user-email lookups, and prints only aggregate counts.
+6. Verify web/worker readiness, the security warning, local-login availability and
+   SSO initiation before restoring requests. Keep the pre-migration backup until
+   the change has been accepted.
+
+The scripts intentionally do not generate keys, enable maintenance, take backups,
+change roles, or deploy containers. Those are separate operator-controlled steps.
+If rollout fails after migration, retain the explicit keys while repairing the
+rollout; old plaintext-mode processes cannot safely read the migrated columns.
+A pre-migration database restore requires a deliberate matching configuration
+rollback. Do not delete volumes or restore over new data without approval.
+
 ### Persistence, backups, and rollback
 
 New stack-scoped named volumes:
@@ -125,6 +171,9 @@ Render with neutral non-production values before publishing changes:
 ```sh
 SURE_SECRET_KEY_BASE=validation-only-not-a-real-secret \
 SURE_POSTGRES_PASSWORD=validation-only-password \
+SURE_ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=validation-only-primary \
+SURE_ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=validation-only-deterministic \
+SURE_ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=validation-only-salt \
 WF_SECRET_KEY=validation-only-key \
 WF_AUTH_PASSWORD_HASH=validation-only-hash \
 WF_CORS_ALLOW_ORIGINS=https://example.invalid \
