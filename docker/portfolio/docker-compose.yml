@@ -33,7 +33,10 @@ x-sure-env: &sure_env
 
 services:
   sure:
-    image: ghcr.io/we-promise/sure:0.7.5-hotfix.2
+    image: sure-mcp:0.7.5-hotfix.2-8858b8ff8fef
+    pull_policy: never
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
     environment: *sure_env
     volumes:
       - sure-storage:/rails/storage
@@ -54,7 +57,10 @@ services:
       - sure-backend
 
   sure-worker:
-    image: ghcr.io/we-promise/sure:0.7.5-hotfix.2
+    image: sure-mcp:0.7.5-hotfix.2-8858b8ff8fef
+    pull_policy: never
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
     command: ["bundle", "exec", "sidekiq"]
     environment: *sure_env
     volumes:
