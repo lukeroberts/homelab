@@ -17,7 +17,7 @@ services:
       - backend
   mempool-web:
     container_name: mempool-web
-    image: mempool/frontend:v3.3.1
+    image: mempool/frontend:v3.3.2
     user: "1000:1000"
     environment:
       FRONTEND_HTTP_PORT: "8080"
@@ -39,7 +39,7 @@ services:
       - backend
   mempool-api:
     container_name: mempool-api
-    image: mempool/backend:v3.3.1
+    image: mempool/backend:v3.3.2
     user: "1000:1000"
     environment:
       PID: 1000
