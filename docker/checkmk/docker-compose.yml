@@ -2,6 +2,23 @@ services:
   checkmk:
     image: checkmk/check-mk-ultimate:2.5.0p15
     container_name: checkmk
+    # Install the post-start hook inside the container so Portainer does not
+    # need a repository-relative bind mount. Keep the vendor startup as PID 1.
+    entrypoint:
+      - /bin/bash
+      - -ec
+      - |
+        mkdir -p /docker-entrypoint.d/post-start
+        printf '%s\n' \
+          '#!/bin/sh' \
+          'set -eu' \
+          'omd update-apache-config "$$CMK_SITE_ID"' \
+          'apache2ctl configtest' \
+          'service apache2 start' \
+          > /docker-entrypoint.d/post-start/10-system-apache.sh
+        chmod 0755 /docker-entrypoint.d/post-start/10-system-apache.sh
+        exec /docker-entrypoint.sh "$$@"
+      - checkmk-entrypoint
     ports:
       - "8010:8000"
     #  - "5000:5000"
@@ -15,6 +32,19 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - checkmk_data:/omd/sites:rw
+    # The image's default healthcheck covers the site, not system Apache.
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          omd status >/dev/null &&
+          curl --noproxy '*' --fail --silent --show-error --max-time 5
+          http://127.0.0.1:80/.well-known/oauth-authorization-server/oauth-$$CMK_SITE_ID
+          >/dev/null
+      interval: 60s
+      timeout: 10s
+      start_period: 120s
+      retries: 3
     restart: unless-stopped
     networks:
       - frontend
