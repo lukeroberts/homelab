@@ -61,7 +61,8 @@ services:
       SERVER_PORT: 443
       CORS_ORIGIN: https://${PATCHMON_CORS_ORIGIN}
       TZ: America/Chicago
-      GUACD_ADDRESS: guacd:4822
+      # guacd shares this service's network namespace for session callbacks.
+      GUACD_ADDRESS: "127.0.0.1:4822"
       TRUST_PROXY: true
       # Database Connection Pool Configuration (Prisma)
       DB_CONNECTION_LIMIT: 30
@@ -108,8 +109,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      guacd:
-        condition: service_healthy
+
     logging:
       driver: "json-file"
       options:
@@ -121,19 +121,31 @@ services:
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     restart: unless-stopped
+    # Session callbacks use loopback, so guacd must share the server namespace.
+    network_mode: "service:server"
+    depends_on:
+      server:
+        condition: service_started
+    # Rejoin the server's new namespace after it is recreated.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        /opt/guacamole/entrypoint.sh -b 127.0.0.1 & pid=$$!
+        trap 'kill $$pid; wait $$pid; exit 0' TERM INT
+        while kill -0 $$pid 2>/dev/null && ls /sys/class/net | grep -q '^eth'; do sleep 5 & wait $$!; done
+        kill $$pid 2>/dev/null; exit 1
     read_only: true
     tmpfs:
       - /tmp:size=64m
+      - /home/guacd:size=16m,uid=1000,gid=1000
     security_opt:
       - no-new-privileges:true
     cap_drop:
       - ALL
     mem_limit: 512m
     cpus: '1.0'
-    networks:
-      - patchmon-internal
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 4822 || exit 1"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 4822 && ls /sys/class/net | grep -q '^eth' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
