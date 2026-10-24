@@ -47,7 +47,7 @@ services:
         max-file: "3"
 
   server:
-    image: ghcr.io/patchmon/patchmon-server:2.1.4
+    image: ghcr.io/patchmon/patchmon-server:2.1.6
     restart: unless-stopped
     # See PatchMon Docker README for additional environment variables and configuration instructions
     hostname: patchmon-server
