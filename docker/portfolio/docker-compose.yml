@@ -72,7 +72,7 @@ services:
       - sure-backend
 
   sure-db:
-    image: postgres:16.13-alpine
+    image: postgres:17.10-alpine
     environment:
       POSTGRES_USER: sure
       POSTGRES_PASSWORD: ${SURE_POSTGRES_PASSWORD:?Set SURE_POSTGRES_PASSWORD in Portainer}
