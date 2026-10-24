@@ -6,11 +6,46 @@ This stack adds Sure while retaining Actual Budget, Wealthfolio, and their exist
 volume names and configuration. Removing the old services or retargeting their
 public URLs is a separate cutover. dTax and other crypto-tax tools are not included.
 
-Sure uses the upstream `0.7.5-hotfix.2` image for both web and Sidekiq, PostgreSQL 16,
-and Redis 8.2. Images are version-pinned, and Watchtower is explicitly disabled for
-the new services. The web entrypoint prepares the database; the worker waits for
+Sure uses a locally loaded, commit-specific MCP-fix overlay of upstream
+`0.7.5-hotfix.2` for both web and Sidekiq, PostgreSQL 16, and Redis 8.2. Images are
+version-pinned, and Watchtower is explicitly disabled for the Sure services.
+The web entrypoint prepares the database; the worker waits for
 web health before starting. `/up` is a boot/liveness check, not proof that banking
 connections or background imports work.
+
+### MCP current-holdings overlay
+
+The Sure image `sure-mcp:0.7.5-hotfix.2-8858b8ff8fef` replaces only
+`app/models/assistant/function/get_holdings.rb`. It fixes closed positions being
+revived by MCP, honors the native provider-snapshot selection, and repairs the
+ticker filter. No dependencies, assets, database migrations, or financial records
+are changed by the overlay. Source and regression tests:
+
+https://github.com/lukeroberts/sure/tree/8858b8ff8fefe2a8f35eb922611b635ba1d0c169
+
+Build or load the image on the target Docker host **before deploying** this stack.
+`pull_policy: never` intentionally avoids registry pulls: this image is locally
+built, not a published registry tag. Reproduce it from the pinned source:
+
+```sh
+git clone --branch fix/mcp-current-holdings https://github.com/lukeroberts/sure.git
+cd sure
+git checkout 8858b8ff8fefe2a8f35eb922611b635ba1d0c169
+docker build -f Dockerfile.mcp-fix \
+  --build-arg REVISION=8858b8ff8fefe2a8f35eb922611b635ba1d0c169 \
+  --build-arg SOURCE_URL=https://github.com/lukeroberts/sure \
+  -t sure-mcp:0.7.5-hotfix.2-8858b8ff8fef .
+```
+
+The Dockerfile pins the original upstream base-image digest. Do not include runtime
+secrets, storage, database dumps, or financial exports in the build context.
+Deployment remains through the Git-backed Portainer stack. If moving the stack to
+another host, build/load this image there first. Roll back by restoring the original
+`ghcr.io/we-promise/sure:0.7.5-hotfix.2` image references and removing the local-image
+pull policy through Git/Portainer; preserve volumes and encryption keys.
+
+The patch does not address FX conversion of mixed-currency MCP totals or cached
+account-balance-versus-holding valuation discrepancies.
 
 ### Before merging / deploying
 
