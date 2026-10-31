@@ -109,43 +109,6 @@ services:
     networks:
       - sure-backend
 
-  actualbudget:
-    image: ghcr.io/actualbudget/actual:26.10.0
-    #ports:
-    #  - '5006:5006'
-    volumes:
-      # Change './actual-data' below to the path to the folder you want Actual to store its data in on your server.
-      # '/data' is the path Actual will look for its files in by default, so leave that as-is.
-      - actual-data:/data
-    healthcheck:
-      # Enable health check for the instance
-      test: ['CMD-SHELL', 'node src/scripts/health-check.js']
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    restart: unless-stopped
-    networks:
-      - frontend
-  wealthfolio:
-    image: afadil/wealthfolio:3.10.0
-    #ports:
-    #  - '8088:8088'
-    volumes:
-      - wealthfolio-data:/data
-    environment:
-      - WF_DB_PATH=/data/wealthfolio.db
-      - WF_SECRET_KEY=${WF_SECRET_KEY}
-      - WF_AUTH_PASSWORD_HASH=${WF_AUTH_PASSWORD_HASH}
-      - WF_CORS_ALLOW_ORIGINS="${WF_CORS_ALLOW_ORIGINS}"
-      # ── AI Agent Access / MCP (optional) ────────────────────────────────
-      # Requires Wealthfolio authentication via password or OIDC.
-      - WF_MCP_ENABLED=${WF_MCP_ENABLED:-false}
-      - WF_MCP_AUDIT_ENABLED=${WF_MCP_AUDIT_ENABLED:-true}
-    restart: unless-stopped
-    networks:
-      - frontend
-
 networks:
   sure-backend:
     driver: bridge
