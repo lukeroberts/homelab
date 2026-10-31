@@ -128,7 +128,7 @@ services:
     networks:
       - frontend
   wealthfolio:
-    image: afadil/wealthfolio:3.10.0
+    image: afadil/wealthfolio:3.11.0
     #ports:
     #  - '8088:8088'
     volumes:
