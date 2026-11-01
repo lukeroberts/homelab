@@ -1,3 +1,5 @@
+# Ring-MQTT inventory stage: Home Assistant cannot publish Ring commands.
+# Configure required passwords in the stack environment before deployment.
 services:
   homeassistant:
     container_name: home-assistant
@@ -10,6 +12,130 @@ services:
     privileged: true
     network_mode: host
 
+  mosquitto:
+    image: eclipse-mosquitto:2.0.22
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.25
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    ports:
+      - "127.0.0.1:1883:1883"
+    environment:
+      MQTT_RING_PASSWORD: ${MQTT_RING_PASSWORD:?Set a dedicated Ring-MQTT broker password}
+      MQTT_HA_PASSWORD: ${MQTT_HA_PASSWORD:?Set a dedicated HA read-only broker password}
+    volumes:
+      - mosquitto_config:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+    networks:
+      - ring_backend
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        umask 077
+        mkdir -p /mosquitto/config /mosquitto/data
+        cat > /mosquitto/config/mosquitto.conf <<'CONF'
+        listener 1883
+        allow_anonymous false
+        password_file /mosquitto/config/passwords
+        acl_file /mosquitto/config/acl
+        persistence true
+        persistence_location /mosquitto/data/
+        log_dest stdout
+        CONF
+        cat > /mosquitto/config/acl <<'ACL'
+        user ringmqtt
+        topic readwrite ring/#
+        topic write homeassistant/#
+        topic read homeassistant/status
+        topic read hass/status
+        topic read hassio/status
+
+        user homeassistant
+        topic read ring/#
+        topic read homeassistant/#
+        topic write homeassistant/status
+        ACL
+        mosquitto_passwd -b -c /mosquitto/config/passwords ringmqtt "$${MQTT_RING_PASSWORD}"
+        mosquitto_passwd -b /mosquitto/config/passwords homeassistant "$${MQTT_HA_PASSWORD}"
+        chown -R mosquitto:mosquitto /mosquitto/config /mosquitto/data
+        unset MQTT_RING_PASSWORD MQTT_HA_PASSWORD
+        exec /docker-entrypoint.sh /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ring-mqtt:
+    image: tsightler/ring-mqtt:5.9.3
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    mem_limit: 768m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    ports:
+      - "127.0.0.1:55123:55123"
+      - "127.0.0.1:8554:8554"
+    environment:
+      MQTT_RING_PASSWORD: ${MQTT_RING_PASSWORD:?Set a dedicated Ring-MQTT broker password}
+      RTSP_PASSWORD: ${RING_RTSP_PASSWORD:?Set a dedicated RTSP password}
+      RING_LOCATION_IDS_JSON: ${RING_LOCATION_IDS_JSON:-[]}
+      DEBUG: ring-mqtt
+    volumes:
+      - ring_data:/data
+    networks:
+      - ring_backend
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        umask 077
+        node <<'NODE'
+        const fs = require('node:fs');
+        const locationIds = JSON.parse(process.env.RING_LOCATION_IDS_JSON);
+        if (!Array.isArray(locationIds) || !locationIds.every(id => typeof id === 'string')) {
+          throw new Error('RING_LOCATION_IDS_JSON must be an array of location ID strings');
+        }
+        const mqttUrl = new URL('mqtt://mosquitto:1883');
+        mqttUrl.username = 'ringmqtt';
+        mqttUrl.password = process.env.MQTT_RING_PASSWORD;
+        const config = {
+          mqtt_url: mqttUrl.href,
+          mqtt_options: '',
+          livestream_user: 'ringviewer',
+          livestream_pass: process.env.RTSP_PASSWORD,
+          disarm_code: '',
+          enable_cameras: true,
+          enable_modes: false,
+          enable_panic: false,
+          hass_topic: 'homeassistant/status',
+          ring_topic: 'ring',
+          location_ids: locationIds
+        };
+        fs.writeFileSync('/data/config.json.new', JSON.stringify(config, null, 2), { mode: 0o600 });
+        fs.renameSync('/data/config.json.new', '/data/config.json');
+        NODE
+        unset MQTT_RING_PASSWORD RTSP_PASSWORD RING_LOCATION_IDS_JSON
+        exec /init
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   home-assistant_data:
     name: home-assistant_data
+  mosquitto_config:
+  mosquitto_data:
+  ring_data:
+
+networks:
+  ring_backend:
+    driver: bridge
