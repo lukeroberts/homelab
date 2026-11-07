@@ -55,7 +55,7 @@ services:
 
   # Browser for recipe URL imports; no host port or frontend access.
   norish-obscura:
-    image: norishapp/obscura:0.2.4-norish.1
+    image: norishapp/obscura:0.2.5-norish.1
     container_name: norish-obscura
     restart: unless-stopped
     environment:
