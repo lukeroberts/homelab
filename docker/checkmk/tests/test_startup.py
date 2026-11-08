@@ -37,7 +37,9 @@ class StartupTests(unittest.TestCase):
         vendor.write_text(
             '#!/bin/sh\nset -eu\n'
             'test "$1" = "argument with spaces"\n'
+            'test -x "$HOOKROOT/pre-start/10-forwarded-headers.sh"\n'
             'test -x "$HOOKROOT/post-start/10-system-apache.sh"\n'
+            '"$HOOKROOT/pre-start/10-forwarded-headers.sh"\n'
             '"$HOOKROOT/post-start/10-system-apache.sh"\n'
         )
         vendor.chmod(0o755)
@@ -75,6 +77,7 @@ class StartupTests(unittest.TestCase):
         result = self.run_wrapper()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.calls(), [
+            "omd config testsite set APACHE_FORWARDED_HEADERS manual",
             "omd update-apache-config testsite", "apache2ctl configtest", "service apache2 start",
         ])
         self.assertTrue(os.access(self.hooks / "post-start/10-system-apache.sh", os.X_OK))
@@ -86,15 +89,18 @@ class StartupTests(unittest.TestCase):
         self.assertEqual(self.calls().count("omd update-apache-config testsite"), 2)
         self.assertEqual(self.calls().count("service apache2 start"), 2)
 
-    def test_update_failure_aborts_startup(self):
+    def test_configuration_failure_aborts_startup(self):
         self.env["FAIL_COMMAND"] = "omd"
         self.assertNotEqual(self.run_wrapper().returncode, 0)
-        self.assertEqual(self.calls(), ["omd update-apache-config testsite"])
+        self.assertEqual(self.calls(), ["omd config testsite set APACHE_FORWARDED_HEADERS manual"])
 
     def test_invalid_apache_configuration_aborts_startup(self):
         self.env["FAIL_COMMAND"] = "apache2ctl"
         self.assertNotEqual(self.run_wrapper().returncode, 0)
-        self.assertEqual(self.calls(), ["omd update-apache-config testsite", "apache2ctl configtest"])
+        self.assertEqual(self.calls(), [
+            "omd config testsite set APACHE_FORWARDED_HEADERS manual",
+            "omd update-apache-config testsite", "apache2ctl configtest",
+        ])
 
     def test_service_start_failure_is_propagated(self):
         self.env["FAIL_COMMAND"] = "service"
@@ -112,6 +118,40 @@ class StartupTests(unittest.TestCase):
         self.assertIn("omd status", healthcheck[-1])
         self.assertIn("http://127.0.0.1:80/", healthcheck[-1])
         self.assertIn("curl", healthcheck[-1])
+
+    def run_healthcheck(self, scheme="https", resource_scheme="https"):
+        # Only the HTTP boundary is stubbed; execute the actual Compose check.
+        authorization = {
+            "issuer": f"{scheme}://localhost/oauth-testsite",
+            **{key: f"{scheme}://localhost/oauth-testsite/{path}" for key, path in (
+                ("authorization_endpoint", "authorize"),
+                ("token_endpoint", "token"),
+                ("registration_endpoint", "register"),
+            )},
+        }
+        resource = {
+            "resource": f"{resource_scheme}://localhost/testsite/check_mk/mcp",
+            "authorization_servers": [f"{resource_scheme}://localhost/oauth-testsite"],
+        }
+        curl = self.root / "bin/curl"
+        curl.write_text(
+            "#!/usr/bin/env python3\nimport sys\n"
+            f"print({json.dumps(authorization)!r} if any('oauth-authorization-server' in a "
+            f"for a in sys.argv) else {json.dumps(resource)!r})\n"
+        )
+        curl.chmod(0o755)
+        command = self.service["healthcheck"]["test"][-1].replace("$$", "$")
+        return subprocess.run(["/bin/sh", "-c", command], env=self.env, capture_output=True, text=True)
+
+    def test_healthcheck_rejects_http_authorization_metadata(self):
+        self.assertNotEqual(self.run_healthcheck(scheme="http").returncode, 0)
+
+    def test_healthcheck_rejects_http_resource_metadata(self):
+        self.assertNotEqual(self.run_healthcheck(resource_scheme="http").returncode, 0)
+
+    def test_healthcheck_accepts_https_metadata(self):
+        result = self.run_healthcheck()
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":

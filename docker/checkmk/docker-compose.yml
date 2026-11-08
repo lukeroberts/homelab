@@ -2,13 +2,19 @@ services:
   checkmk:
     image: checkmk/check-mk-ultimate:2.5.0p18
     container_name: checkmk
-    # Install the post-start hook inside the container so Portainer does not
+    # Install startup hooks inside the container so Portainer does not
     # need a repository-relative bind mount. Keep the vendor startup as PID 1.
     entrypoint:
       - /bin/bash
       - -ec
       - |
-        mkdir -p /docker-entrypoint.d/post-start
+        mkdir -p /docker-entrypoint.d/pre-start /docker-entrypoint.d/post-start
+        printf '%s\n' \
+          '#!/bin/sh' \
+          'set -eu' \
+          'omd config "$$CMK_SITE_ID" set APACHE_FORWARDED_HEADERS manual' \
+          > /docker-entrypoint.d/pre-start/10-forwarded-headers.sh
+        chmod 0755 /docker-entrypoint.d/pre-start/10-forwarded-headers.sh
         printf '%s\n' \
           '#!/bin/sh' \
           'set -eu' \
@@ -38,9 +44,16 @@ services:
         - CMD-SHELL
         - >-
           omd status >/dev/null &&
-          curl --noproxy '*' --fail --silent --show-error --max-time 5
-          http://127.0.0.1:80/.well-known/oauth-authorization-server/oauth-$$CMK_SITE_ID
-          >/dev/null
+          curl --noproxy '*' --fail --silent --show-error --max-time 3
+          -H 'Host: localhost' -H 'X-Forwarded-Proto: https'
+          http://127.0.0.1:80/.well-known/oauth-authorization-server/oauth-$$CMK_SITE_ID |
+          python3 -c 'import json,sys; d=json.load(sys.stdin); issuer="https://localhost/oauth-"+sys.argv[1]; assert d["issuer"]==issuer; assert all(d[k]==issuer+"/"+p for k,p in (("authorization_endpoint","authorize"),("token_endpoint","token"),("registration_endpoint","register")))'
+          "$$CMK_SITE_ID" &&
+          curl --noproxy '*' --fail --silent --show-error --max-time 3
+          -H 'Host: localhost' -H 'X-Forwarded-Proto: https'
+          http://127.0.0.1:80/.well-known/oauth-protected-resource/$$CMK_SITE_ID/check_mk/mcp |
+          python3 -c 'import json,sys; d=json.load(sys.stdin); site=sys.argv[1]; assert d["resource"]=="https://localhost/"+site+"/check_mk/mcp"; assert d["authorization_servers"]==["https://localhost/oauth-"+site]'
+          "$$CMK_SITE_ID"
       interval: 60s
       timeout: 10s
       start_period: 120s
