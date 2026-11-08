@@ -96,47 +96,6 @@ services:
     command:
       - |
         umask 077
-        # BEGIN snapshot-jpeg:v1
-        node --input-type=commonjs - --apply <<'SNAPSHOT_PATCH'
-        require('node:fs').writeFileSync('/app/ring-mqtt/lib/snapshot-jpeg.mjs', "import { spawn } from 'node:child_process';\n\nconst isJpeg = (buffer) => Buffer.isBuffer(buffer) && buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;\n\n/** Normalize a fetched still payload; never open a network or live-video source. */\nexport default async function normalizeSnapshotJpeg(input, ffmpegPath, { timeoutMs = 5000, maxInputBytes = 8 * 1024 * 1024, maxOutputBytes = 8 * 1024 * 1024 } = {}) {\n  if (!Buffer.isBuffer(input) || input.length === 0) throw new Error('Empty snapshot');\n  if (input.length > maxInputBytes) throw new Error('Snapshot input exceeds limit');\n  if (isJpeg(input)) return input;\n  const annexB = input.subarray(0, 4).equals(Buffer.from([0, 0, 0, 1])) || input.subarray(0, 3).equals(Buffer.from([0, 0, 1]));\n  if (!annexB) throw new Error('Unsupported snapshot format');\n  return new Promise((resolve, reject) => {\n    const args = ['-hide_banner', '-loglevel', 'error', '-threads', '1', '-protocol_whitelist', 'pipe', '-f', 'h264', '-i', 'pipe:0', '-frames:v', '1', '-c:v', 'mjpeg', '-threads', '1', '-f', 'image2pipe', 'pipe:1'];\n    const child = spawn(ffmpegPath, args, { stdio: ['pipe', 'pipe', 'ignore'] });\n    const chunks = [];\n    let outputBytes = 0;\n    let settled = false;\n    const finish = (error, output) => {\n      if (settled) return;\n      settled = true;\n      clearTimeout(timer);\n      if (error) reject(error);\n      else resolve(output);\n    };\n    const timer = setTimeout(() => {\n      child.kill('SIGKILL');\n      finish(new Error('Snapshot conversion timed out'));\n    }, timeoutMs);\n    timer.unref();\n    child.on('error', () => finish(new Error('Snapshot converter unavailable')));\n    child.stdin.on('error', () => {});\n    child.stdout.on('data', (chunk) => {\n      if (settled) return;\n      outputBytes += chunk.length;\n      if (outputBytes > maxOutputBytes) {\n        child.kill('SIGKILL');\n        finish(new Error('Snapshot output exceeds limit'));\n        return;\n      }\n      chunks.push(chunk);\n    });\n    child.on('close', (code) => {\n      const output = Buffer.concat(chunks);\n      if (code !== 0 || !isJpeg(output)) finish(new Error('Snapshot conversion did not produce JPEG'));\n      else finish(null, output);\n    });\n    child.stdin.end(input);\n  });\n}\n", { mode: 0o644 });
-        const fs = require('node:fs');
-        const crypto = require('node:crypto');
-
-        const ORIGINAL_SHA256 = 'aab968ac2a4ab0127d5cb9a174f7092b5ebf38dca7b6eafd8cc8fb77952cee52';
-        const EXTRA_IMPORT = "import normalizeSnapshotJpeg from '../lib/snapshot-jpeg.mjs'\n";
-        const NORMALIZATION = `            // ring-snapshot-jpeg:v1 — preserve the previous cache on conversion failure.
-                    try {
-                        newSnapshot = await normalizeSnapshotJpeg(newSnapshot, pathToFfmpeg)
-                    } catch {
-                        this.debug('Discarding invalid snapshot; keeping the previous image')
-                        return
-                    }
-        `;
-        const hash = (source) => crypto.createHash('sha256').update(source).digest('hex');
-
-        function patchCameraSource(source) {
-          if (hash(source) === ORIGINAL_SHA256) {
-            return EXTRA_IMPORT + source.replace('        if (newSnapshot) {\n', '        if (newSnapshot) {\n' + NORMALIZATION);
-          }
-          // A container restart retains its writable layer: recognize only this exact patch.
-          const unpatched = source.startsWith(EXTRA_IMPORT)
-            ? source.slice(EXTRA_IMPORT.length).replace(NORMALIZATION, '')
-            : source;
-          if (hash(unpatched) === ORIGINAL_SHA256 && source.includes(NORMALIZATION)) return source;
-          throw new Error('Unsupported Ring-MQTT camera source: snapshot patch not applied');
-        }
-
-        module.exports = { patchCameraSource, ORIGINAL_SHA256 };
-
-        if (process.argv.includes('--apply')) {
-          const file = process.argv[process.argv.indexOf('--apply') + 1] || '/app/ring-mqtt/devices/camera.js';
-          const source = fs.readFileSync(file, 'utf8');
-          const patched = patchCameraSource(source);
-          if (patched !== source) fs.writeFileSync(file, patched);
-          console.log('Ring-MQTT 5.9.3 snapshot JPEG normalization verified');
-        }
-        SNAPSHOT_PATCH
-        # END snapshot-jpeg:v1
         node <<'NODE'
         const fs = require('node:fs');
         const locationIds = JSON.parse(process.env.RING_LOCATION_IDS_JSON);
