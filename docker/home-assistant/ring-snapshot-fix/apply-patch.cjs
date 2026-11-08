@@ -12,17 +12,38 @@ const NORMALIZATION = `            // ring-snapshot-jpeg:v1 — preserve the pre
             }
 `;
 const hash = (source) => crypto.createHash('sha256').update(source).digest('hex');
+const ORIGINAL_SETTINGS = `                autoInterval: savedState?.snapshot?.autoInterval
+                    ? savedState.snapshot.autoInterval
+                    : true,
+                intervalDuration: savedState?.snapshot?.intervalDuration
+                    ? savedState.snapshot.intervalDuration
+                    : (this.device.operatingOnBattery) ? 600 : 30,
+`;
+// Only the snapshot-settings restoration portion of upstream PR #1113.
+const FIXED_SETTINGS = `                autoInterval: savedState?.snapshot?.autoInterval ?? true,
+                // updateDeviceState() saves the duration as 'interval'
+                intervalDuration: savedState?.snapshot?.interval
+                    ? savedState.snapshot.interval
+                    : savedState?.snapshot?.intervalDuration
+                        ? savedState.snapshot.intervalDuration
+                        : (this.device.operatingOnBattery) ? 600 : 30,
+`;
 
 function patchCameraSource(source) {
-  if (hash(source) === ORIGINAL_SHA256) {
-    return EXTRA_IMPORT + source.replace('        if (newSnapshot) {\n', '        if (newSnapshot) {\n' + NORMALIZATION);
+  // Recognize only stock, the exact previous overlay, or the exact combined overlay.
+  const previousSettings = source.replace(FIXED_SETTINGS, ORIGINAL_SETTINGS);
+  const original = previousSettings.startsWith(EXTRA_IMPORT)
+    ? previousSettings.slice(EXTRA_IMPORT.length).replace(NORMALIZATION, '')
+    : previousSettings;
+  if (hash(original) !== ORIGINAL_SHA256 || !original.includes(ORIGINAL_SETTINGS)) {
+    throw new Error('Unsupported Ring-MQTT camera source: snapshot patch not applied');
   }
-  // A container restart retains its writable layer: recognize only this exact patch.
-  const unpatched = source.startsWith(EXTRA_IMPORT)
-    ? source.slice(EXTRA_IMPORT.length).replace(NORMALIZATION, '')
-    : source;
-  if (hash(unpatched) === ORIGINAL_SHA256 && source.includes(NORMALIZATION)) return source;
-  throw new Error('Unsupported Ring-MQTT camera source: snapshot patch not applied');
+  const previousOverlay = EXTRA_IMPORT + original.replace('        if (newSnapshot) {\n', '        if (newSnapshot) {\n' + NORMALIZATION);
+  const combinedOverlay = previousOverlay.replace(ORIGINAL_SETTINGS, FIXED_SETTINGS);
+  if (![original, previousOverlay, combinedOverlay].includes(source)) {
+    throw new Error('Unsupported Ring-MQTT camera source: snapshot patch not applied');
+  }
+  return combinedOverlay;
 }
 
 module.exports = { patchCameraSource, ORIGINAL_SHA256 };
@@ -32,5 +53,5 @@ if (process.argv.includes('--apply')) {
   const source = fs.readFileSync(file, 'utf8');
   const patched = patchCameraSource(source);
   if (patched !== source) fs.writeFileSync(file, patched);
-  console.log('Ring-MQTT 5.9.3 snapshot JPEG normalization verified');
+  console.log('Ring-MQTT 5.9.3 snapshot normalization and settings persistence verified');
 }

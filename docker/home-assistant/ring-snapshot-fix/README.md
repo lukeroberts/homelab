@@ -37,6 +37,17 @@ Readable source files and tests live here; `render-startup.py` embeds the two ru
 python3 docker/home-assistant/ring-snapshot-fix/render-startup.py
 ```
 
+## Snapshot-settings persistence backport
+
+The overlay also backports only the saved snapshot settings correction from [upstream PR #1113](https://github.com/tsightler/ring-mqtt/pull/1113), merged into upstream `dev`:
+
+- Restore the saved `snapshot.interval`, accepting legacy `snapshot.intervalDuration` as a fallback.
+- Respect an explicitly saved `autoInterval: false` instead of enabling automatic selection at startup.
+
+The state writer and save format remain unchanged. No state-file edits or migrations are required. The other changes in that upstream PR are deliberately excluded. The guard accepts only the checksum-pinned original source, the exact previous snapshot-only overlay (which it upgrades), or the exact combined overlay (which it leaves unchanged on restart). Unexpected or partial modifications still fail closed.
+
+Verify settings after both service restart and container recreation, allowing startup to settle before trusting the first HA readback. A displayed interval before startup completes is not persistence evidence. Keep this backport version-coupled to the pinned image and remove it after upgrading to a verified stable release containing the upstream correction.
+
 ## Local verification
 
 Requires Node.js, FFmpeg/ffprobe with libx264 for synthetic fixtures, Python 3, and PyYAML for Compose comparisons. The regression harness extracts the actual `refreshSnapshot` method from a checksum-verified pinned source rather than substituting a mock image-processing pipeline. Only the Ring API boundary is replaced with a local buffer.
@@ -48,7 +59,7 @@ curl --fail --location https://raw.githubusercontent.com/tsightler/ring-mqtt/v5.
 node docker/home-assistant/ring-snapshot-fix/apply-patch.cjs --apply "$TMPDIR/ring-camera.js"
 RING_MQTT_CAMERA_SOURCE="$TMPDIR/ring-camera.js" \
 SNAPSHOT_NORMALIZER_MODULE="$PWD/docker/home-assistant/ring-snapshot-fix/snapshot-jpeg.mjs" \
-node --test docker/home-assistant/ring-snapshot-fix/tests/snapshot.test.mjs
+node --test docker/home-assistant/ring-snapshot-fix/tests/*.test.mjs
 ```
 
 Observed tests include malformed H.264 regression, JPEG passthrough, missing decoder, bad/empty images, preservation of previous cache, timeout, byte bounds, source-drift rejection and startup-patch idempotence. The core malformed-snapshot test was observed failing against unmodified upstream code before implementation and passing after it. Exact embedded bootstrap execution was tested twice in a temporary local application tree; shell/Node syntax and Docker Compose rendering were checked.
