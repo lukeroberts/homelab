@@ -39,7 +39,7 @@ services:
         # Fail closed on wildcard, malformed, or non-alarm topic configuration.
         if [ -n "$${MQTT_HA_ALARM_COMMAND_TOPIC:-}" ]; then
           case "$${MQTT_HA_ALARM_COMMAND_TOPIC}" in
-            *[!A-Za-z0-9/_-]*) echo 'Invalid alarm command topic' >&2; exit 1 ;;
+            *[!A-Za-z0-9/_-]*|*/) echo 'Invalid alarm command topic' >&2; exit 1 ;;
           esac
           old_ifs="$$IFS"; IFS=/; set -f
           set -- $$MQTT_HA_ALARM_COMMAND_TOPIC
