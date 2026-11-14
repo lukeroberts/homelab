@@ -51,11 +51,12 @@ function assertDecodableJpeg(buffer, expectedWidth, expectedHeight) {
   assert.equal(stream.height, expectedHeight);
 }
 
-test('Ring-MQTT publishes a decodable JPEG when Ring returns an H.264 snapshot', async () => {
-  const camera = cameraWithSnapshot(syntheticH264());
+test('rolled-back Ring-MQTT publishes fetched H.264 bytes unchanged', async () => {
+  const input = syntheticH264();
+  const camera = cameraWithSnapshot(input);
   await refreshSnapshot.call(camera, 'interval');
   assert.equal(camera.published.length, 1);
-  assertDecodableJpeg(camera.published[0], 64, 48);
+  assert.strictEqual(camera.published[0], input);
 });
 
 test('snapshot conversion bounds input and output data size', async () => {
@@ -70,21 +71,22 @@ test('existing JPEG is returned byte-for-byte without starting a converter', asy
   assert.strictEqual(await normalize(jpeg.stdout, '/nonexistent/converter'), jpeg.stdout);
 });
 
-test('invalid conversion preserves the previous image without publishing bad data', async () => {
+test('rolled-back upstream pipeline does not filter non-JPEG data', async () => {
   const previous = Buffer.from('previous-cache-sentinel');
-  const camera = cameraWithSnapshot(Buffer.from('not an image'), previous);
+  const input = Buffer.from('not an image');
+  const camera = cameraWithSnapshot(input, previous);
   await refreshSnapshot.call(camera, 'interval');
-  assert.strictEqual(camera.data.snapshot.cache, previous);
-  assert.equal(camera.data.snapshot.cacheType, 'previous');
-  assert.equal(camera.data.snapshot.timestamp, 1);
-  assert.equal(camera.published.length, 0);
+  assert.strictEqual(camera.data.snapshot.cache, input);
+  assert.equal(camera.data.snapshot.cacheType, 'interval');
+  assert.equal(camera.published.length, 1);
 });
 
-test('an invalid first snapshot is not published', async () => {
-  const camera = cameraWithSnapshot(Buffer.from('not an image'));
+test('rolled-back upstream pipeline publishes a non-JPEG first snapshot', async () => {
+  const input = Buffer.from('not an image');
+  const camera = cameraWithSnapshot(input);
   await refreshSnapshot.call(camera, 'interval');
-  assert.equal(camera.data.snapshot.cache, null);
-  assert.equal(camera.published.length, 0);
+  assert.strictEqual(camera.data.snapshot.cache, input);
+  assert.equal(camera.published.length, 1);
 });
 
 test('a missing converter fails without exposing payload content', async () => {

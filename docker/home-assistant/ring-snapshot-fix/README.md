@@ -1,4 +1,22 @@
-# Ring-MQTT 5.9.3 snapshot JPEG fix — deployment proposal
+# Ring-MQTT 5.9.3 settings-only overlay — rollback pending deployment
+
+## Current change (supersedes the historical proposal below)
+
+Remove only the active H.264-to-JPEG workaround. The upstream snapshot fetch/cache/publication method is restored byte-for-byte; non-JPEG responses will again be published unchanged. This does not establish why Ring sometimes returns H.264.
+
+Keep the persistence backport, original defaults/state writer, image, environment, credentials, volumes and all other services unchanged. Preserve All/60 seconds, `autoInterval: false`, and the 180-second ding hold. The guard accepts only pinned stock, exact JPEG-only/combined overlays, or the exact settings-only result; all converge to settings-only source. Drift remains rejected.
+
+The renderer no longer installs the helper. `snapshot-jpeg.mjs` and its standalone tests are retained only for recovery; the camera source no longer imports/calls it. Pipeline tests now deliberately assert upstream raw-byte passthrough. Run `rollback.test.mjs` against checksum-pinned stock; run the persistence/snapshot suites against the settings-only output with the helper-module variable set as described below.
+
+**Recovery:** the working combined overlay remains in commit `dc23e605eb8f59f75f51e90b53062afa9f02cc5e` (PR #364). Restore its overlay files and embedded command via a reviewed Git change with the same data/settings. Its older guard does not accept settings-only source, so recovery requires targeted recreation from stock, not merely restarting that historical command over the newer writable layer.
+
+**Approved deployment scope:** Portainer Git stack redeploy may recreate/interrupt Ring-MQTT, Home Assistant and Mosquitto. Homebridge remains outside the deployment scope. Standard Git stack redeploy has no service selector; hourly auto-update makes merging a deployment trigger. Preserve the existing auto-update policy and deploy through Portainer, not host Compose.
+
+After deployment, verify actual source, retained persistence/settings and original named config/data mounts and pairings. Report actual HA/Mosquitto/Ring-MQTT container recreation and verify Homebridge IDs/start times and pairing files are unchanged. Require two advancing interval snapshot timestamps and decode current stills without starting a stream or ringing the doorbell. Notification/live-preview acceptance remains a user test.
+
+---
+
+# Historical combined-overlay proposal (not the active behavior of this branch)
 
 ## Status
 
