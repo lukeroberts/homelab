@@ -1,4 +1,4 @@
-# Ring-MQTT inventory stage: Home Assistant cannot publish Ring commands.
+# HA Ring commands are denied except an optionally configured exact alarm-mode topic.
 # Configure required passwords in the stack environment before deployment.
 services:
   homeassistant:
@@ -25,7 +25,8 @@ services:
       - "127.0.0.1:1883:1883"
     environment:
       MQTT_RING_PASSWORD: ${MQTT_RING_PASSWORD:?Set a dedicated Ring-MQTT broker password}
-      MQTT_HA_PASSWORD: ${MQTT_HA_PASSWORD:?Set a dedicated HA read-only broker password}
+      MQTT_HA_PASSWORD: ${MQTT_HA_PASSWORD:?Set a dedicated HA broker password}
+      MQTT_HA_ALARM_COMMAND_TOPIC: ${MQTT_HA_ALARM_COMMAND_TOPIC:-}
     volumes:
       - mosquitto_config:/mosquitto/config
       - mosquitto_data:/mosquitto/data
@@ -35,6 +36,18 @@ services:
     command:
       - |
         umask 077
+        # Fail closed on wildcard, malformed, or non-alarm topic configuration.
+        if [ -n "$${MQTT_HA_ALARM_COMMAND_TOPIC:-}" ]; then
+          case "$${MQTT_HA_ALARM_COMMAND_TOPIC}" in
+            *[!A-Za-z0-9/_-]*) echo 'Invalid alarm command topic' >&2; exit 1 ;;
+          esac
+          old_ifs="$$IFS"; IFS=/; set -f
+          set -- $$MQTT_HA_ALARM_COMMAND_TOPIC
+          set +f; IFS="$$old_ifs"
+          if [ "$$#" -ne 6 ] || [ "$${1:-}" != ring ] || [ -z "$${2:-}" ] || [ "$${3:-}" != alarm ] || [ -z "$${4:-}" ] || [ "$${5:-}" != alarm ] || [ "$${6:-}" != command ]; then
+            echo 'Invalid alarm command topic' >&2; exit 1
+          fi
+        fi
         mkdir -p /mosquitto/config /mosquitto/data
         cat > /mosquitto/config/mosquitto.conf <<'CONF'
         listener 1883
@@ -58,10 +71,13 @@ services:
         topic read homeassistant/#
         topic write homeassistant/status
         ACL
+        if [ -n "$${MQTT_HA_ALARM_COMMAND_TOPIC:-}" ]; then
+          printf 'topic write %s\n' "$${MQTT_HA_ALARM_COMMAND_TOPIC}" >> /mosquitto/config/acl
+        fi
         mosquitto_passwd -b -c /mosquitto/config/passwords ringmqtt "$${MQTT_RING_PASSWORD}"
         mosquitto_passwd -b /mosquitto/config/passwords homeassistant "$${MQTT_HA_PASSWORD}"
         chown -R mosquitto:mosquitto /mosquitto/config /mosquitto/data
-        unset MQTT_RING_PASSWORD MQTT_HA_PASSWORD
+        unset MQTT_RING_PASSWORD MQTT_HA_PASSWORD MQTT_HA_ALARM_COMMAND_TOPIC
         exec /docker-entrypoint.sh /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
     logging:
       driver: json-file
