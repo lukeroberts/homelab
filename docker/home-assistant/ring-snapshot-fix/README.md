@@ -10,9 +10,9 @@ The renderer no longer installs the helper. `snapshot-jpeg.mjs` and its standalo
 
 **Recovery:** the working combined overlay remains in commit `dc23e605eb8f59f75f51e90b53062afa9f02cc5e` (PR #364). Restore its overlay files and embedded command via a reviewed Git change with the same data/settings. Its older guard does not accept settings-only source, so recovery requires targeted recreation from stock, not merely restarting that historical command over the newer writable layer.
 
-**Deployment blocker:** keep this rollback PR unmerged until a Portainer Ring-MQTT-only deployment path is verified. Standard Git stack redeploy has no service selector and can recreate companions; hourly auto-update makes merging a deployment trigger. Do not disable auto-update, redeploy the full stack, or bypass Portainer with host Compose under Ring-only approval.
+**Approved deployment scope:** Portainer Git stack redeploy may recreate/interrupt Ring-MQTT, Home Assistant and Mosquitto. Homebridge remains outside the deployment scope. Standard Git stack redeploy has no service selector; hourly auto-update makes merging a deployment trigger. Preserve the existing auto-update policy and deploy through Portainer, not host Compose.
 
-After a safe deployment, verify actual source, retained persistence/settings, original mounts/pairings and unchanged HA/Mosquitto/Homebridge IDs/start times. Require two advancing interval snapshot timestamps and decode current stills without starting a stream or ringing the doorbell. Notification/live-preview acceptance remains a user test.
+After deployment, verify actual source, retained persistence/settings and original named config/data mounts and pairings. Report actual HA/Mosquitto/Ring-MQTT container recreation and verify Homebridge IDs/start times and pairing files are unchanged. Require two advancing interval snapshot timestamps and decode current stills without starting a stream or ringing the doorbell. Notification/live-preview acceptance remains a user test.
 
 ---
 
