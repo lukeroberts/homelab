@@ -1,6 +1,6 @@
 services:
   checkmk:
-    image: checkmk/check-mk-ultimate:3.0.0-2026.11.11
+    image: checkmk/check-mk-ultimate:2.5.0p19
     container_name: checkmk
     # Install startup hooks inside the container so Portainer does not
     # need a repository-relative bind mount. Keep the vendor startup as PID 1.
