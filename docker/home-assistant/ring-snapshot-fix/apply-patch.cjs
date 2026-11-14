@@ -30,7 +30,7 @@ const FIXED_SETTINGS = `                autoInterval: savedState?.snapshot?.auto
 `;
 
 function patchCameraSource(source) {
-  // Recognize only stock, the exact previous overlay, or the exact combined overlay.
+  // Accept only pinned stock or exact known overlays; remove normalization only.
   const previousSettings = source.replace(FIXED_SETTINGS, ORIGINAL_SETTINGS);
   const original = previousSettings.startsWith(EXTRA_IMPORT)
     ? previousSettings.slice(EXTRA_IMPORT.length).replace(NORMALIZATION, '')
@@ -40,10 +40,11 @@ function patchCameraSource(source) {
   }
   const previousOverlay = EXTRA_IMPORT + original.replace('        if (newSnapshot) {\n', '        if (newSnapshot) {\n' + NORMALIZATION);
   const combinedOverlay = previousOverlay.replace(ORIGINAL_SETTINGS, FIXED_SETTINGS);
-  if (![original, previousOverlay, combinedOverlay].includes(source)) {
+  const persistenceOverlay = original.replace(ORIGINAL_SETTINGS, FIXED_SETTINGS);
+  if (![original, previousOverlay, combinedOverlay, persistenceOverlay].includes(source)) {
     throw new Error('Unsupported Ring-MQTT camera source: snapshot patch not applied');
   }
-  return combinedOverlay;
+  return persistenceOverlay;
 }
 
 module.exports = { patchCameraSource, ORIGINAL_SHA256 };
@@ -53,5 +54,5 @@ if (process.argv.includes('--apply')) {
   const source = fs.readFileSync(file, 'utf8');
   const patched = patchCameraSource(source);
   if (patched !== source) fs.writeFileSync(file, patched);
-  console.log('Ring-MQTT 5.9.3 snapshot normalization and settings persistence verified');
+  console.log('Ring-MQTT 5.9.3 settings persistence verified; snapshot normalization disabled');
 }
