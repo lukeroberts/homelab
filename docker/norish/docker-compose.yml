@@ -1,6 +1,6 @@
 services:
   norish:
-    image: norishapp/norish:v0.26.0-beta
+    image: norishapp/norish:v0.26.1-beta
     container_name: norish-app
     restart: unless-stopped
     #ports:
