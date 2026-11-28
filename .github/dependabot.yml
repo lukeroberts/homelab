@@ -14,6 +14,10 @@ updates:
       day: "saturday"
       time: "02:00"
     ignore:
+      # Keep Checkmk on 2.x; review and remove this rule before adopting stable 3.x.
+      - dependency-name: "checkmk/check-mk-ultimate"
+        update-types:
+          - "version-update:semver-major"
       - dependency-name: "checkmk/check-mk-cloud"
         versions:
           - "2.4.0-x.x.x"
