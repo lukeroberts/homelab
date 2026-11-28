@@ -205,7 +205,7 @@ services:
       - backend
   immich-machine-learning:
     container_name: immich-machine-learning
-    image: docker.io/altran1502/immich-machine-learning:v3.2.4
+    image: docker.io/altran1502/immich-machine-learning:v3.4.1
     # extends: # uncomment this section for hardware acceleration - see https://docs.immich.app/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
